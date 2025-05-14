@@ -8,37 +8,11 @@ Nest.js 是一个用于构建高效、可扩展的服务器端应用程序的渐
 
 本教程将通过一系列精心设计的示例和项目，带您一步步探索 Nest.js 的核心概念和高级特性。
 
-## 📚 教程内容概览
-
-本教程仓库包含以下主要模块和主题：
-
-- **🏁 基础入门**
-  - [控制器 (Controllers)](./controller/README.md) - 学习如何处理传入的请求和响应。
-  - [模块 (Modules)](./module/README.md) - 了解如何组织和管理您的应用程序结构。
-  - [中间件 (Middleware)](./middware/README.md) - 掌握在请求-响应周期中执行自定义逻辑的方法。
-  - [异常过滤器 (Exception Filters)](./exception-filters/README.md) - 学习如何优雅地处理应用程序中的错误。
-- **💡 进阶概念**
-  - [计算机状态监控示例 (Computer Status)](./computer-status/README.md) - 一个实践项目，展示如何构建一个简单的状态监控 API。
-  - [编程范式 (OOP, FP, FRP)](./oop、fp、frp/) - 探讨 Nest.js 如何融合不同的编程范式。
-- **🛠️ 更多特性 (敬请期待)**
-  - 管道 (Pipes)
-  - 守卫 (Guards)
-  - 拦截器 (Interceptors)
-  - 自定义装饰器 (Custom Decorators)
-  - 数据库集成 (Database Integration)
-  - 认证与授权 (Authentication & Authorization)
-  - 微服务 (Microservices)
-  - GraphQL
-  - WebSocket
-  - 测试 (Testing)
-
-每个子目录都包含一个独立的 Nest.js 项目或代码示例，并附有相应的 `README.md` 文件，详细解释了该部分的内容。
-
 ## 🚀 如何开始
 
 1.  **克隆仓库**:
     ```bash
-    git clone https://github.com/your-username/nest-tutorial.git
+    git clone https://github.com/xixixiaoyu/nest-tutorial.git
     cd nest-tutorial
     ```
 2.  **进入子项目目录**:
@@ -75,7 +49,7 @@ Nest.js 是一个用于构建高效、可扩展的服务器端应用程序的渐
 
 ## 📄 许可证
 
-本项目采用 [MIT 许可证](LICENSE) (如果未来添加 LICENSE 文件，请取消此注释并创建 LICENSE 文件)。
+本项目采用 [MIT 许可证](LICENSE)。
 
 ## 🙏 致谢
 
