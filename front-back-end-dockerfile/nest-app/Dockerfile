@@ -1,54 +1,52 @@
-# 第一阶段：构建应用
-FROM node:20-alpine AS build
+# ---- 阶段 1: 构建阶段 ----
+FROM node:18.17-alpine AS builder
+
+# 创建非 root 用户
+RUN addgroup --system --gid 1001 nestjs
+RUN adduser --system --uid 1001 --ingroup nestjs nestjs
 
 # 设置工作目录
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# 复制包管理文件（利用 Docker 缓存层）
-COPY package*.json pnpm-lock.yaml* ./
+# 安装 pnpm
+RUN npm install -g pnpm
 
-# 安装 pnpm 并安装依赖
-RUN npm install -g pnpm && \
-    pnpm install --frozen-lockfile
+# 复制 package.json 和 pnpm-lock.yaml
+COPY package*.json pnpm-lock.yaml ./
+
+# 安装所有依赖（包括开发依赖，用于构建）
+RUN pnpm install --frozen-lockfile
 
 # 复制源代码
 COPY . .
 
-# 构建应用
+# 执行构建
 RUN pnpm run build
 
-# 第二阶段：生产环境
-FROM nginx:alpine AS production
+# 移除开发依赖，使得 node_modules 目录仅包含生产环境所需的依赖
+RUN pnpm prune --prod
 
-# 添加项目信息
-LABEL maintainer="your-email@example.com"
-LABEL description="React production app with TypeScript"
-LABEL version="1.0.0"
+# ---- 阶段 2: 运行阶段 ----
+FROM node:18.17-alpine AS runner
 
-# 安装必要工具
-RUN apk add --no-cache curl tzdata && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone
+# 创建非 root 用户
+# 创建非 root 用户 (与构建阶段保持一致的组名)
+RUN addgroup --system --gid 1001 nestjs && \
+    adduser --system --uid 1001 --ingroup nestjs nestjs
 
-# 复制 nginx 配置
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 设置工作目录
+WORKDIR /usr/src/app
 
-# 复制构建产物
-COPY --from=build /app/dist /usr/share/nginx/html
+# 从构建阶段复制构建产物和生产依赖
+COPY --from=builder --chown=nestjs:nestjs /usr/src/app/dist ./dist
+COPY --from=builder --chown=nestjs:nestjs /usr/src/app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nestjs /usr/src/app/package.json ./package.json
 
-# 设置正确的文件权限
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chmod -R 755 /usr/share/nginx/html
-
-# 创建非 root 用户运行（可选，增强安全性）
-USER nginx
+# 切换到非 root 用户
+USER nestjs
 
 # 暴露端口
-EXPOSE 80
+EXPOSE 3000
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
-
-# 启动 nginx
-CMD ["nginx", "-g", "daemon off;"]
+# 启动应用
+CMD ["node", "dist/main"]
