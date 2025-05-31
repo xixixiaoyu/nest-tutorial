@@ -1,6 +1,6 @@
 # 第一阶段：构建我们的应用
-# 使用 Node.js 20 的轻量版本作为基础镜像
-FROM node:20-alpine AS build
+# 使用 Node.js 18.17 的轻量版本作为基础镜像
+FROM node:18.17-alpine AS build
 
 # 全局安装 pnpm
 RUN npm install -g pnpm
@@ -41,8 +41,8 @@ RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chmod -R 755 /usr/share/nginx/html
 
 # 设置健康检查
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
 
 # 声明容器对外提供服务的端口
 EXPOSE 80

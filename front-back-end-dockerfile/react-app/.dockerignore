@@ -3,7 +3,6 @@ node_modules
 .pnpm-store
 
 # 构建输出目录（构建时重新生成）
-build
 dist
 
 # 环境变量文件
@@ -33,7 +32,6 @@ coverage
 # 版本控制和文档
 .git
 .gitignore
-.dockerignore
 README.md
 LICENSE
 CHANGELOG.md
@@ -41,3 +39,11 @@ CHANGELOG.md
 # 临时文件
 *.tmp
 *.temp
+
+# 测试文件
+test/
+**/*.spec.ts
+**/*.test.ts
+
+# TypeScript 编译缓存
+*.tsbuildinfo
