@@ -25,11 +25,6 @@ RUN pnpm run build
 # 使用轻量级的 nginx 服务器来托管我们的静态文件
 FROM nginx:alpine
 
-# 安装 curl 工具（用于健康检查）和设置时区
-RUN apk add --no-cache curl tzdata && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone
-
 # 复制自定义的 nginx 配置文件
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
@@ -39,10 +34,6 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # 设置文件权限
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chmod -R 755 /usr/share/nginx/html
-
-# 设置健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
 
 # 声明容器对外提供服务的端口
 EXPOSE 80
