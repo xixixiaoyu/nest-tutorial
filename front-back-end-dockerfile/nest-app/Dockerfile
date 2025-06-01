@@ -1,10 +1,6 @@
 # ---- 阶段 1: 构建阶段 ----
 FROM node:18.17-alpine AS builder
 
-# 创建非 root 用户
-RUN addgroup --system --gid 1001 nestjs
-RUN adduser --system --uid 1001 --ingroup nestjs nestjs
-
 # 设置工作目录
 WORKDIR /usr/src/app
 
@@ -30,9 +26,11 @@ RUN pnpm prune --prod
 FROM node:18.17-alpine AS runner
 
 # 创建非 root 用户
-# 创建非 root 用户 (与构建阶段保持一致的组名)
-RUN addgroup --system --gid 1001 nestjs && \
-    adduser --system --uid 1001 --ingroup nestjs nestjs
+RUN addgroup -g 1001 -S nestjs && \
+    adduser -u 1001 -S -G nestjs nestjs
+
+# 切换到非 root 用户
+USER nestjs
 
 # 设置工作目录
 WORKDIR /usr/src/app
@@ -41,9 +39,6 @@ WORKDIR /usr/src/app
 COPY --from=builder --chown=nestjs:nestjs /usr/src/app/dist ./dist
 COPY --from=builder --chown=nestjs:nestjs /usr/src/app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nestjs /usr/src/app/package.json ./package.json
-
-# 切换到非 root 用户
-USER nestjs
 
 # 暴露端口
 EXPOSE 3000
