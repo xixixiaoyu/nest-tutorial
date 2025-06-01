@@ -1,3 +1,4 @@
+// cats/cats.controller.ts
 import {
   Controller,
   Get,
@@ -5,8 +6,8 @@ import {
   Put,
   Delete,
   Body,
-  Query,
   Param,
+  Query,
   Headers,
   Ip,
   HttpCode,
@@ -14,250 +15,264 @@ import {
   Redirect,
   Res,
 } from '@nestjs/common';
-import { CreateCatDto } from '../dto/create-cat.dto';
-import { UpdateCatDto } from '../dto/update-cat.dto';
-import { QueryCatDto } from '../dto/query-cat.dto';
 import { Response } from 'express';
+import { CreateCatDto } from '../dto/create-cat.dto';
 
-// 模拟数据存储
-interface Cat {
-  id: number;
-  name: string;
-  age: number;
-  breed: string;
-  color?: string;
-}
-
-@Controller('cats') // 基础路径前缀: /cats
+@Controller('cats') // 设置基础路径为 /cats
 export class CatsController {
-  // 模拟数据库
-  private cats: Cat[] = [
-    { id: 1, name: '小白', age: 2, breed: '英短', color: '白色' },
-    { id: 2, name: '小黑', age: 3, breed: '美短', color: '黑色' },
-    { id: 3, name: '橘猫', age: 1, breed: '田园猫', color: '橘色' },
-  ];
-  private nextId = 4;
+  // ========== 基础路由示例 ==========
 
-  // 1. 基础 GET 请求 - 获取所有猫咪
-  @Get() // 路径: GET /cats
-  findAll(@Query() query: QueryCatDto): any {
-    console.log('查询参数:', query);
-
-    let result = [...this.cats];
-
-    // 根据查询参数过滤
-    if (query.breed) {
-      result = result.filter((cat) => cat.breed.includes(query.breed));
-    }
-    if (query.minAge) {
-      result = result.filter((cat) => cat.age >= query.minAge);
-    }
-    if (query.maxAge) {
-      result = result.filter((cat) => cat.age <= query.maxAge);
-    }
-
-    // 分页
-    if (query.offset) {
-      result = result.slice(query.offset);
-    }
-    if (query.limit) {
-      result = result.slice(0, query.limit);
-    }
-
+  /**
+   * 获取所有猫咪 - 基础 GET 请求
+   * 路径：GET /cats
+   */
+  @Get()
+  findAll(): any {
+    // 返回对象时，Nest 会自动转换为 JSON
     return {
-      data: result,
-      total: this.cats.length,
-      message: '成功获取猫咪列表',
+      message: '获取所有猫咪成功',
+      data: [
+        { id: 1, name: '小白', age: 2, breed: '英短' },
+        { id: 2, name: '小黑', age: 3, breed: '美短' },
+        { id: 3, name: '橘猫', age: 1, breed: '田园猫' },
+      ],
     };
   }
 
-  // 2. 带路由参数的 GET 请求 - 获取单只猫咪
-  @Get(':id') // 路径: GET /cats/:id
-  findOne(@Param('id') id: string): any {
-    const catId = parseInt(id);
-    const cat = this.cats.find((c) => c.id === catId);
+  /**
+   * 获取所有猫咪品种 - 静态路由
+   * 路径：GET /cats/breeds
+   * 注意：静态路由要放在动态路由之前！
+   */
+  @Get('breeds')
+  findAllBreeds(): string[] {
+    return ['英国短毛猫', '美国短毛猫', '波斯猫', '暹罗猫', '布偶猫'];
+  }
 
-    if (!cat) {
-      return {
-        error: '猫咪不存在',
-        message: `ID 为 ${id} 的猫咪未找到`,
-      };
-    }
+  /**
+   * 获取纯文本响应
+   * 路径：GET /cats/text
+   */
+  @Get('text')
+  getText(): string {
+    // 返回基本类型时，直接发送原始值
+    return '这是纯文本响应，不会被转换为 JSON';
+  }
 
+  // ========== 路由参数示例 ==========
+
+  // ========== 查询参数示例 ==========
+
+  /**
+   * 搜索猫咪 - 查询参数
+   * 路径：GET /cats/search?limit=10&breed=英短&minAge=1
+   */
+  @Get('search')
+  searchCats(
+    @Query('limit') limit: string,
+    @Query('breed') breed: string,
+    @Query('minAge') minAge: string,
+  ): any {
     return {
-      data: cat,
-      message: `成功获取 ID 为 ${id} 的猫咪信息`,
+      message: '搜索猫咪',
+      filters: {
+        limit: limit || '不限制',
+        breed: breed || '所有品种',
+        minAge: minAge || '不限制年龄',
+      },
+      data: [{ id: 1, name: '小白', age: 2, breed: '英短' }],
     };
   }
 
-  // 3. POST 请求 - 创建新猫咪
-  @Post() // 路径: POST /cats
-  @HttpCode(201) // 设置状态码为 201 Created
-  @Header('X-Custom-Header', 'Cat-Created') // 设置自定义响应头
-  async create(
-    @Body() createCatDto: CreateCatDto,
-    @Headers('user-agent') userAgent: string,
-    @Ip() ip: string,
-  ): Promise<any> {
-    console.log('用户代理:', userAgent);
-    console.log('客户端IP:', ip);
-
-    // 模拟异步操作
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const newCat: Cat = {
-      id: this.nextId++,
-      ...createCatDto,
-    };
-
-    this.cats.push(newCat);
-
+  /**
+   * 根据 ID 获取单个猫咪 - 动态路由
+   * 路径：GET /cats/123
+   */
+  @Get(':id')
+  findOne(@Param('id') catId: string): any {
     return {
-      data: newCat,
-      message: '成功创建新猫咪',
-      meta: {
-        userAgent,
-        clientIp: ip,
+      message: `获取 ID 为 ${catId} 的猫咪信息`,
+      data: {
+        id: catId,
+        name: '小白',
+        age: 2,
+        breed: '英短',
       },
     };
   }
 
-  // 4. PUT 请求 - 更新猫咪信息
-  @Put(':id') // 路径: PUT /cats/:id
-  update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto): any {
-    const catId = parseInt(id);
-    const catIndex = this.cats.findIndex((c) => c.id === catId);
+  // ========== POST 请求和请求体示例 ==========
 
-    if (catIndex === -1) {
-      return {
-        error: '猫咪不存在',
-        message: `ID 为 ${id} 的猫咪未找到`,
-      };
-    }
+  /**
+   * 添加新猫咪 - POST 请求
+   * 路径：POST /cats
+   * 请求体：{ "name": "小花", "age": 1, "breed": "波斯猫" }
+   */
+  @Post()
+  async create(@Body() createCatDto: CreateCatDto): Promise<any> {
+    console.log('接收到的猫咪数据：', createCatDto);
 
-    // 更新猫咪信息
-    this.cats[catIndex] = {
-      ...this.cats[catIndex],
-      ...updateCatDto,
+    // 模拟保存到数据库
+    const newCat = {
+      id: Date.now(), // 简单的 ID 生成
+      ...createCatDto,
+      createdAt: new Date().toISOString(),
     };
 
     return {
-      data: this.cats[catIndex],
+      message: '成功添加了一只新猫咪！',
+      data: newCat,
+    };
+  }
+
+  // ========== PUT 请求示例 ==========
+
+  /**
+   * 更新猫咪信息 - PUT 请求
+   * 路径：PUT /cats/123
+   */
+  @Put(':id')
+  update(@Param('id') id: string, @Body() updateCatDto: CreateCatDto): any {
+    return {
       message: `成功更新 ID 为 ${id} 的猫咪信息`,
+      data: {
+        id,
+        ...updateCatDto,
+        updatedAt: new Date().toISOString(),
+      },
     };
   }
 
-  // 5. DELETE 请求 - 删除猫咪
-  @Delete(':id') // 路径: DELETE /cats/:id
-  @HttpCode(204) // 设置状态码为 204 No Content
+  // ========== DELETE 请求示例 ==========
+
+  /**
+   * 删除猫咪 - DELETE 请求
+   * 路径：DELETE /cats/123
+   */
+  @Delete(':id')
+  @HttpCode(204) // 自定义状态码：204 No Content
   remove(@Param('id') id: string): void {
-    const catId = parseInt(id);
-    const catIndex = this.cats.findIndex((c) => c.id === catId);
-
-    if (catIndex !== -1) {
-      this.cats.splice(catIndex, 1);
-    }
-    // 204 状态码通常不返回响应体
+    console.log(`删除 ID 为 ${id} 的猫咪`);
+    // 删除成功，不返回内容
   }
 
-  // 6. 查询参数示例 - 按品种搜索
-  @Get('search/breed') // 路径: GET /cats/search/breed
-  searchByBreed(
-    @Query('name') breedName: string,
-    @Query('limit') limit: string = '10',
-  ): any {
-    const limitNum = parseInt(limit);
-    const result = this.cats
-      .filter((cat) => cat.breed.includes(breedName))
-      .slice(0, limitNum);
+  // ========== 获取请求详细信息示例 ==========
 
+  /**
+   * 获取请求详细信息
+   * 路径：GET /cats/request-info
+   */
+  @Get('request-info')
+  getRequestInfo(
+    @Headers() headers: any,
+    @Headers('user-agent') userAgent: string,
+    @Ip() ip: string,
+    @Query() query: any,
+  ): any {
     return {
-      data: result,
-      searchTerm: breedName,
-      limit: limitNum,
-      message: `找到 ${result.length} 只 ${breedName} 猫咪`,
+      message: '请求详细信息',
+      data: {
+        clientIp: ip,
+        userAgent: userAgent,
+        allHeaders: headers,
+        queryParams: query,
+      },
     };
   }
 
-  // 7. 重定向示例
-  @Get('docs') // 路径: GET /cats/docs
-  @Redirect('https://docs.nestjs.com', 302)
+  // ========== 自定义响应头示例 ==========
+
+  /**
+   * 设置自定义响应头
+   * 路径：POST /cats/with-headers
+   */
+  @Post('with-headers')
+  @HttpCode(201) // 自定义状态码
+  @Header('Cache-Control', 'no-store') // 设置响应头
+  @Header('X-Custom-Header', 'NestJS-Tutorial')
+  createWithHeaders(@Body() createCatDto: CreateCatDto): any {
+    return {
+      message: '创建成功，并设置了自定义响应头',
+      data: createCatDto,
+    };
+  }
+
+  // ========== 重定向示例 ==========
+
+  /**
+   * 重定向到文档
+   * 路径：GET /cats/docs
+   */
+  @Get('docs')
+  @Redirect('https://docs.nestjs.com', 301)
   getDocs(@Query('version') version: string) {
     // 动态重定向
-    if (version && version === 'v9') {
+    if (version && version === '5') {
       return {
-        url: 'https://docs.nestjs.com/v9/',
-        statusCode: 301,
+        url: 'https://docs.nestjs.com/v5/',
+        statusCode: 302,
       };
     }
-    // 如果没有返回对象，使用装饰器中的默认值
+    // 如果没有返回值，使用装饰器中的默认重定向
   }
 
-  // 8. 通配符路由示例
-  @Get('special/*') // 路径: GET /cats/special/*
-  handleSpecialRoutes(@Param() params: any): any {
-    return {
-      message: '这是一个通配符路由',
-      capturedPath: params[0], // 通配符捕获的部分
-      fullParams: params,
-    };
+  // ========== 路由通配符示例 ==========
+
+  /**
+   * 通配符路由
+   * 路径：GET /cats/ab*cd (匹配 abcd、ab_cd、abXYZcd 等)
+   */
+  @Get('ab*cd')
+  wildcardRoute(): string {
+    return '这是通配符匹配的路由！';
   }
 
-  // 9. 使用原生响应对象 (特定于库的方式)
-  @Get('native-response')
-  nativeResponse(@Res() res: Response): void {
-    res.status(200).json({
-      message: '使用原生 Express 响应对象',
+  // ========== 特定于库的响应方式示例 ==========
+
+  /**
+   * 使用 Express 响应对象
+   * 路径：GET /cats/express-style
+   */
+  @Get('express-style')
+  expressStyle(@Res() response: Response): void {
+    // 直接使用 Express 的响应对象
+    response.status(200).cookie('tutorial', 'nestjs-controller').json({
+      message: '使用 Express 风格的响应',
       timestamp: new Date().toISOString(),
     });
   }
 
-  // 10. 混合方式 - 既使用响应对象又让 Nest 处理返回值
-  @Get('mixed-response')
-  mixedResponse(@Res({ passthrough: true }) res: Response): any {
-    // 设置自定义头部
-    res.cookie('cat-session', 'abc123', { httpOnly: true });
-    res.header('X-Total-Cats', this.cats.length.toString());
+  /**
+   * 使用 passthrough 模式
+   * 路径：GET /cats/passthrough
+   */
+  @Get('passthrough')
+  passthroughMode(@Res({ passthrough: true }) response: Response): any {
+    // 设置 Cookie 和 Header，但仍然让 Nest 处理响应体
+    response.cookie('mode', 'passthrough');
+    response.header('X-Response-Mode', 'Passthrough');
 
-    // 返回数据，让 Nest 处理序列化
     return {
-      message: '混合响应方式',
-      totalCats: this.cats.length,
+      message:
+        'Passthrough 模式：设置了 Cookie 和 Header，但响应体由 Nest 处理',
+    };
+  }
+
+  // ========== 异步处理示例 ==========
+
+  /**
+   * 异步获取猫咪数据
+   * 路径：GET /cats/async
+   */
+  @Get('async')
+  async getAsyncCats(): Promise<any> {
+    // 模拟异步数据库查询
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return {
+      message: '异步获取猫咪数据完成',
+      data: [{ id: 1, name: '异步小猫', age: 1, breed: '异步品种' }],
       timestamp: new Date().toISOString(),
     };
-  }
-
-  // 11. 异步处理示例
-  @Get('async-example')
-  async getAsyncData(): Promise<any> {
-    // 模拟异步数据库查询
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    return {
-      data: this.cats,
-      message: '异步获取数据成功',
-      processedAt: new Date().toISOString(),
-    };
-  }
-
-  // 12. 错误处理示例
-  @Get('error-example/:id')
-  errorExample(@Param('id') id: string): any {
-    const catId = parseInt(id);
-
-    if (isNaN(catId)) {
-      throw new Error('ID 必须是数字');
-    }
-
-    if (catId < 0) {
-      throw new Error('ID 不能为负数');
-    }
-
-    const cat = this.cats.find((c) => c.id === catId);
-    if (!cat) {
-      throw new Error(`ID 为 ${id} 的猫咪不存在`);
-    }
-
-    return { data: cat };
   }
 }
