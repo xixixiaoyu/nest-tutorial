@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>编程范式综合示例 - 待办事项应用</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      .paradigm-badges {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+      }
+
+      .badge.oop {
+        background: rgba(255, 107, 107, 0.2);
+        border: 2px solid #ff6b6b;
+      }
+      .badge.fp {
+        background: rgba(74, 144, 226, 0.2);
+        border: 2px solid #4a90e2;
+      }
+      .badge.frp {
+        background: rgba(123, 201, 111, 0.2);
+        border: 2px solid #7bc96f;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        padding: 30px;
+      }
+
+      .left-panel,
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      }
+
+      .card h3 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .input-group input,
+      .input-group select {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 1em;
+      }
+
+      .input-group input:focus,
+      .input-group select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5a6fd8;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+        font-size: 0.9em;
+        padding: 8px 16px;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+      }
+
+      .filter-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        padding: 8px 16px;
+        border: 2px solid #e1e5e9;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9em;
+      }
+
+      .filter-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      .todo-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .todo-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        margin-bottom: 10px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .todo-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .todo-item.completed {
+        opacity: 0.7;
+      }
+
+      .todo-item.completed .todo-title {
+        text-decoration: line-through;
+      }
+
+      .todo-checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+
+      .todo-content {
+        flex: 1;
+      }
+
+      .todo-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .todo-description {
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      .todo-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .priority-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+      }
+
+      .priority-high {
+        background: #ffe6e6;
+        color: #d63031;
+      }
+      .priority-medium {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .priority-low {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .stat-label {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+      }
+
+      .search-results {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .search-item {
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .paradigm-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+
+      .paradigm-indicator.oop {
+        background: #ff6b6b;
+      }
+      .paradigm-indicator.fp {
+        background: #4a90e2;
+      }
+      .paradigm-indicator.frp {
+        background: #7bc96f;
+      }
+
+      .console-output {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 20px;
+        border-radius: 10px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.9em;
+        max-height: 300px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+
+        .paradigm-badges {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎯 编程范式综合示例</h1>
+        <p>体验面向对象编程、函数式编程和函数响应式编程的协同工作</p>
+        <div class="paradigm-badges">
+          <div class="badge oop">
+            <span class="paradigm-indicator oop"></span>
+            面向对象编程 (OOP)
+          </div>
+          <div class="badge fp">
+            <span class="paradigm-indicator fp"></span>
+            函数式编程 (FP)
+          </div>
+          <div class="badge frp">
+            <span class="paradigm-indicator frp"></span>
+            函数响应式编程 (FRP)
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="left-panel">
+          <!-- 添加待办事项 -->
+          <div class="card">
+            <h3><span class="paradigm-indicator oop"></span>添加待办事项</h3>
+            <div class="input-group">
+              <input type="text" id="todoTitle" placeholder="任务标题" />
+              <select id="todoPriority">
+                <option value="low">低优先级</option>
+                <option value="medium" selected>中优先级</option>
+                <option value="high">高优先级</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <input type="text" id="todoDescription" placeholder="任务描述（可选）" />
+              <button class="btn btn-primary" onclick="addTodo()">添加任务</button>
+            </div>
+          </div>
+
+          <!-- 搜索功能 -->
+          <div class="card">
+            <h3><span class="paradigm-indicator frp"></span>实时搜索</h3>
+            <div class="input-group">
+              <input type="text" id="searchInput" placeholder="搜索任务..." />
+            </div>
+            <div id="searchResults" class="search-results"></div>
+          </div>
+
+          <!-- 统计信息 -->
+          <div class="card">
+            <h3><span class="paradigm-indicator fp"></span>统计分析</h3>
+            <div id="statsContainer" class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">总任务</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="completedCount">0</div>
+                <div class="stat-label">已完成</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="pendingCount">0</div>
+                <div class="stat-label">待完成</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="completionRate">0%</div>
+                <div class="stat-label">完成率</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-panel">
+          <!-- 过滤和排序 -->
+          <div class="card">
+            <h3><span class="paradigm-indicator fp"></span>过滤和排序</h3>
+            <div class="filter-controls">
+              <div class="filter-btn active" data-filter="all">全部</div>
+              <div class="filter-btn" data-filter="pending">待完成</div>
+              <div class="filter-btn" data-filter="completed">已完成</div>
+              <div class="filter-btn" data-filter="high">高优先级</div>
+            </div>
+            <div class="filter-controls">
+              <select id="sortSelect">
+                <option value="created">按创建时间</option>
+                <option value="priority">按优先级</option>
+                <option value="title">按标题</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 任务列表 -->
+          <div class="card">
+            <h3><span class="paradigm-indicator frp"></span>任务列表</h3>
+            <div id="todoList" class="todo-list"></div>
+          </div>
+
+          <!-- 控制台输出 -->
+          <div class="card">
+            <h3>🔧 系统日志</h3>
+            <div id="consoleOutput" class="console-output"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="todo-app.js"></script>
+    <script>
+      // 全局应用实例
+      let app
+
+      // 重写 console.log 以显示在页面上
+      const originalConsoleLog = console.log
+      const consoleOutput = document.getElementById('consoleOutput')
+
+      console.log = function (...args) {
+        originalConsoleLog.apply(console, args)
+        const message = args
+          .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+          .join(' ')
+        consoleOutput.textContent += message + '\n'
+        consoleOutput.scrollTop = consoleOutput.scrollHeight
+      }
+
+      // 初始化应用
+      function initApp() {
+        app = new TodoApp()
+
+        // 重写渲染方法以更新 DOM
+        app.renderTodos = function (todos) {
+          const todoList = document.getElementById('todoList')
+          todoList.innerHTML = ''
+
+          todos.forEach((todo) => {
+            const todoElement = createTodoElement(todo)
+            todoList.appendChild(todoElement)
+          })
+
+          console.log(`🎨 渲染待办事项列表: ${todos.length} 项`)
+        }
+
+        app.renderStats = function (stats) {
+          document.getElementById('totalCount').textContent = stats.total
+          document.getElementById('completedCount').textContent = stats.completed
+          document.getElementById('pendingCount').textContent = stats.pending
+          document.getElementById('completionRate').textContent = stats.completionRate + '%'
+
+          console.log('📊 统计信息更新:', stats)
+        }
+
+        app.renderSearchResults = function (results) {
+          const searchResults = document.getElementById('searchResults')
+          searchResults.innerHTML = ''
+
+          if (results.length === 0) {
+            searchResults.innerHTML =
+              '<div style="color: #666; text-align: center; padding: 10px;">暂无搜索结果</div>'
+            return
+          }
+
+          results.forEach((todo) => {
+            const resultElement = document.createElement('div')
+            resultElement.className = 'search-item'
+            resultElement.innerHTML = `
+                        <div style="font-weight: 600;">${todo.title}</div>
+                        <div style="font-size: 0.9em; color: #666;">${todo.description}</div>
+                    `
+            searchResults.appendChild(resultElement)
+          })
+
+          console.log(`🔍 搜索结果: ${results.length} 项`)
+        }
+
+        // 初始化事件监听器
+        setupEventListeners()
+
+        // 添加示例数据
+        addSampleData()
+
+        // 触发初始渲染
+        app.dispatch({ type: 'filter_change', filter: 'all' })
+      }
+
+      // 创建待办事项 DOM 元素
+      function createTodoElement(todo) {
+        const todoElement = document.createElement('div')
+        todoElement.className = `todo-item ${todo.completed ? 'completed' : ''}`
+
+        const priorityClass = `priority-${todo.priority}`
+        const priorityText = { high: '高', medium: '中', low: '低' }[todo.priority]
+
+        todoElement.innerHTML = `
+                <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                       onchange="toggleTodo(${todo.id})">
+                <div class="todo-content">
+                    <div class="todo-title">${todo.title}</div>
+                    ${
+                      todo.description
+                        ? `<div class="todo-description">${todo.description}</div>`
+                        : ''
+                    }
+                </div>
+                <div class="todo-meta">
+                    <div class="priority-badge ${priorityClass}">${priorityText}优先级</div>
+                    <button class="btn btn-secondary" onclick="deleteTodo(${todo.id})">删除</button>
+                </div>
+            `
+
+        return todoElement
+      }
+
+      // 设置事件监听器
+      function setupEventListeners() {
+        // 搜索输入
+        const searchInput = document.getElementById('searchInput')
+        searchInput.addEventListener('input', (e) => {
+          app.search(e.target.value)
+        })
+
+        // 过滤按钮
+        document.querySelectorAll('.filter-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'))
+            e.target.classList.add('active')
+            app.setFilter(e.target.dataset.filter)
+          })
+        })
+
+        // 排序选择
+        document.getElementById('sortSelect').addEventListener('change', (e) => {
+          app.setSort(e.target.value)
+        })
+
+        // 回车键添加任务
+        document.getElementById('todoTitle').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            addTodo()
+          }
+        })
+      }
+
+      // 添加待办事项
+      function addTodo() {
+        const title = document.getElementById('todoTitle').value.trim()
+        const description = document.getElementById('todoDescription').value.trim()
+        const priority = document.getElementById('todoPriority').value
+
+        if (!title) {
+          alert('请输入任务标题')
+          return
+        }
+
+        app.addTodo(title, description, priority)
+
+        // 清空输入框
+        document.getElementById('todoTitle').value = ''
+        document.getElementById('todoDescription').value = ''
+
+        console.log(`✅ 添加任务: ${title}`)
+      }
+
+      // 切换任务状态
+      function toggleTodo(id) {
+        const todo = app.todoManager.getTodo(id)
+        if (todo) {
+          app.updateTodo(id, { completed: !todo.completed })
+          console.log(`🔄 切换任务状态: ${todo.title} -> ${!todo.completed ? '完成' : '未完成'}`)
+        }
+      }
+
+      // 删除任务
+      function deleteTodo(id) {
+        const todo = app.todoManager.getTodo(id)
+        if (todo && confirm(`确定要删除任务 "${todo.title}" 吗？`)) {
+          app.deleteTodo(id)
+          console.log(`🗑️ 删除任务: ${todo.title}`)
+        }
+      }
+
+      // 添加示例数据
+      function addSampleData() {
+        const sampleTodos = [
+          {
+            title: '学习 JavaScript 高级概念',
+            description: '深入理解闭包、原型链和异步编程',
+            priority: 'high',
+          },
+          { title: '完成项目文档', description: '编写 API 文档和用户手册', priority: 'medium' },
+          { title: '代码重构优化', description: '优化现有代码结构和性能', priority: 'low' },
+          { title: '准备技术演示', description: '为客户演示准备材料和 Demo', priority: 'high' },
+          { title: '团队周会', description: '讨论下周工作计划和进度', priority: 'medium' },
+        ]
+
+        sampleTodos.forEach((todo) => {
+          app.addTodo(todo.title, todo.description, todo.priority)
+        })
+
+        // 完成一些任务作为示例
+        setTimeout(() => {
+          app.updateTodo(1, { completed: true })
+          app.updateTodo(3, { completed: true })
+        }, 500)
+
+        console.log('📝 已添加示例数据')
+      }
+
+      // 页面加载完成后初始化
+      document.addEventListener('DOMContentLoaded', initApp)
+
+      // 展示编程范式特点
+      setTimeout(() => {
+        console.log('\n💡 三种编程范式在此应用中的体现:')
+        console.log('🔴 OOP: TodoItem 和 TodoManager 类封装了数据和行为')
+        console.log('🔵 FP: 使用纯函数进行数据过滤、排序和分析')
+        console.log('🟢 FRP: 响应式处理用户输入和状态变化')
+      }, 2000)
+    </script>
+  </body>
+</html>

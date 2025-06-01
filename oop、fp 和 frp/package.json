@@ -1,0 +1,45 @@
+{
+  "name": "programming-paradigms-tutorial",
+  "version": "1.0.0",
+  "description": "面向对象编程、函数式编程和函数响应式编程的教学示例项目",
+  "main": "combined-example/todo-app.js",
+  "scripts": {
+    "start": "node combined-example/todo-app.js",
+    "serve": "npx http-server . -p 8080 -o",
+    "demo:oop": "node oop-examples/animal-zoo.js",
+    "demo:oop-advanced": "node oop-examples/game-characters.js",
+    "demo:fp": "node fp-examples/data-processing.js",
+    "demo:fp-math": "node fp-examples/math-operations.js",
+    "demo:frp": "node frp-examples/search-system.js",
+    "demo:frp-realtime": "node frp-examples/real-time-data.js",
+    "demo:combined": "node combined-example/todo-app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "programming-paradigms",
+    "oop",
+    "functional-programming",
+    "reactive-programming",
+    "frp",
+    "tutorial",
+    "education",
+    "examples"
+  ],
+  "author": "Programming Paradigms Tutorial",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/programming-paradigms-tutorial.git"
+  },
+  "bugs": {
+    "url": "https://github.com/example/programming-paradigms-tutorial/issues"
+  },
+  "homepage": "https://github.com/example/programming-paradigms-tutorial#readme"
+}
