@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NestJS 五种数据传输方式测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.min.js"></script>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-right: 440px;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .method-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fafafa;
+      }
+      .method-title {
+        color: #e74c3c;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .method-description {
+        color: #666;
+        margin-bottom: 15px;
+        font-style: italic;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      .file-input {
+        margin: 10px 0;
+      }
+      .result {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+        font-family: 'Courier New', monospace;
+        white-space: pre-wrap;
+        max-height: 300px;
+        overflow-y: auto;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 400px;
+        z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 2px solid #34495e;
+      }
+      .clear-btn {
+        background-color: #e74c3c;
+      }
+      .clear-btn:hover {
+        background-color: #c0392b;
+      }
+      .info-btn {
+        background-color: #27ae60;
+      }
+      .info-btn:hover {
+        background-color: #229954;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 NestJS 五种数据传输方式测试</h1>
+
+      <!-- 获取传输方式说明 -->
+      <div class="method-section">
+        <div class="method-title">📚 传输方式说明</div>
+        <div class="method-description">获取所有数据传输方式的详细说明</div>
+        <button class="info-btn" onclick="getTransferMethods()">
+          获取传输方式说明
+        </button>
+      </div>
+
+      <!-- 1. URL 参数 -->
+      <div class="method-section">
+        <div class="method-title">1. URL 参数传输</div>
+        <div class="method-description">
+          通过 URL 路径传递参数，如 /api/person/123
+        </div>
+        <button onclick="testUrlParam()">测试 URL 参数</button>
+      </div>
+
+      <!-- 2. 查询参数 -->
+      <div class="method-section">
+        <div class="method-title">2. 查询参数传输 (Query String)</div>
+        <div class="method-description">
+          通过 URL 查询字符串传递参数，如 ?name=张三&age=25
+        </div>
+        <button onclick="testQueryString()">测试查询参数</button>
+      </div>
+
+      <!-- 3. Form-urlencoded -->
+      <div class="method-section">
+        <div class="method-title">3. Form-urlencoded 传输</div>
+        <div class="method-description">
+          通过请求体传递表单编码数据 (application/x-www-form-urlencoded)
+        </div>
+        <button onclick="testFormUrlEncoded()">测试 Form-urlencoded</button>
+      </div>
+
+      <!-- 4. JSON -->
+      <div class="method-section">
+        <div class="method-title">4. JSON 数据传输</div>
+        <div class="method-description">
+          通过请求体传递 JSON 格式数据 (application/json)
+        </div>
+        <button onclick="testJson()">测试 JSON 数据</button>
+      </div>
+
+      <!-- 5. Form-data -->
+      <div class="method-section">
+        <div class="method-title">5. Form-data 传输 (文件上传)</div>
+        <div class="method-description">
+          通过 multipart/form-data 传递数据和文件
+        </div>
+        <div class="file-input">
+          <input type="file" id="fileInput" multiple accept="*/*" />
+        </div>
+        <button onclick="testFormData()">测试 Form-data (文件上传)</button>
+      </div>
+
+      <!-- 控制按钮 -->
+      <div class="method-section">
+        <button class="clear-btn" onclick="clearResults()">清空结果</button>
+      </div>
+    </div>
+
+    <!-- 固定定位的结果显示区域 -->
+    <div id="result" class="result">
+      点击左侧按钮开始测试... 💡 提示： - 打开浏览器开发者工具的 Network
+      标签页可以查看请求详情 - 每种传输方式都有不同的使用场景和特点 -
+      文件上传需要选择文件后再点击测试按钮
+    </div>
+
+    <script>
+      // 结果显示函数
+      function displayResult(title, data) {
+        const resultDiv = document.getElementById('result');
+        const timestamp = new Date().toLocaleTimeString();
+        resultDiv.textContent += `\n\n[${timestamp}] ${title}:\n${JSON.stringify(data, null, 2)}`;
+        resultDiv.scrollTop = resultDiv.scrollHeight;
+      }
+
+      // 错误显示函数
+      function displayError(title, error) {
+        const resultDiv = document.getElementById('result');
+        const timestamp = new Date().toLocaleTimeString();
+        resultDiv.textContent += `\n\n[${timestamp}] ❌ ${title} 错误:\n${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}`;
+        resultDiv.scrollTop = resultDiv.scrollHeight;
+      }
+
+      // 清空结果
+      function clearResults() {
+        document.getElementById('result').textContent =
+          '结果已清空，点击左侧按钮开始测试...';
+      }
+
+      // 获取传输方式说明
+      async function getTransferMethods() {
+        try {
+          const response = await axios.get('/api/person/info/methods');
+          displayResult('📚 传输方式说明', response.data);
+        } catch (error) {
+          displayError('获取传输方式说明', error);
+        }
+      }
+
+      // 1. 测试 URL 参数
+      async function testUrlParam() {
+        try {
+          const userId = '12345';
+          const response = await axios.get(`/api/person/${userId}`);
+          displayResult('🔗 URL 参数测试', response.data);
+        } catch (error) {
+          displayError('URL 参数测试', error);
+        }
+      }
+
+      // 2. 测试查询参数
+      async function testQueryString() {
+        try {
+          const response = await axios.get('/api/person', {
+            params: {
+              name: '张三',
+              age: 28,
+            },
+          });
+          displayResult('❓ 查询参数测试', response.data);
+        } catch (error) {
+          displayError('查询参数测试', error);
+        }
+      }
+
+      // 3. 测试 Form-urlencoded
+      async function testFormUrlEncoded() {
+        try {
+          const data = { name: '李四', age: 25 };
+          const response = await axios.post('/api/person', Qs.stringify(data), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          });
+          displayResult('📝 Form-urlencoded 测试', response.data);
+        } catch (error) {
+          displayError('Form-urlencoded 测试', error);
+        }
+      }
+
+      // 4. 测试 JSON
+      async function testJson() {
+        try {
+          const data = { name: '王五', age: 30 };
+          const response = await axios.post('/api/person', data);
+          displayResult('📄 JSON 数据测试', response.data);
+        } catch (error) {
+          displayError('JSON 数据测试', error);
+        }
+      }
+
+      // 5. 测试 Form-data
+      async function testFormData() {
+        try {
+          const fileInput = document.querySelector('#fileInput');
+          const formData = new FormData();
+
+          formData.append('name', '赵六');
+          formData.append('age', '35');
+
+          if (fileInput.files.length > 0) {
+            for (let i = 0; i < fileInput.files.length; i++) {
+              formData.append(`files`, fileInput.files[i]);
+            }
+          } else {
+            displayResult('📁 Form-data 测试', {
+              message: '未选择文件，仅测试文本数据传输',
+            });
+          }
+
+          const response = await axios.post('/api/person/file', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          displayResult('📁 Form-data 测试', response.data);
+        } catch (error) {
+          displayError('Form-data 测试', error);
+        }
+      }
+
+      // 页面加载完成后的初始化
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log('🚀 NestJS 五种数据传输方式测试页面已加载');
+        console.log('💡 提示：打开 Network 标签页查看请求详情');
+      });
+    </script>
+  </body>
+</html>
