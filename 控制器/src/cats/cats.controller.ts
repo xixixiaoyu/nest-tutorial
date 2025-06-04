@@ -84,23 +84,6 @@ export class CatsController {
     };
   }
 
-  /**
-   * 根据 ID 获取单个猫咪 - 动态路由
-   * 路径：GET /cats/123
-   */
-  @Get(':id')
-  findOne(@Param('id') catId: string): any {
-    return {
-      message: `获取 ID 为 ${catId} 的猫咪信息`,
-      data: {
-        id: catId,
-        name: '小白',
-        age: 2,
-        breed: '英短',
-      },
-    };
-  }
-
   // ========== POST 请求和请求体示例 ==========
 
   /**
@@ -187,8 +170,8 @@ export class CatsController {
    * 路径：POST /cats/with-headers
    */
   @Post('with-headers')
-  @HttpCode(201) // 自定义状态码
-  @Header('Cache-Control', 'no-store') // 设置响应头
+  @HttpCode(200) // 自定义状态码，默认是 201
+  @Header('Cache-Control', 'no-store') // 设置响应头，完全禁止缓存
   @Header('X-Custom-Header', 'NestJS-Tutorial')
   createWithHeaders(@Body() createCatDto: CreateCatDto): any {
     return {
@@ -273,6 +256,23 @@ export class CatsController {
       message: '异步获取猫咪数据完成',
       data: [{ id: 1, name: '异步小猫', age: 1, breed: '异步品种' }],
       timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * 根据 ID 获取单个猫咪 - 动态路由
+   * 路径：GET /cats/123
+   */
+  @Get(':id')
+  findOne(@Param('id') catId: string): any {
+    return {
+      message: `获取 ID 为 ${catId} 的猫咪信息`,
+      data: {
+        id: catId,
+        name: '小白',
+        age: 2,
+        breed: '英短',
+      },
     };
   }
 }
