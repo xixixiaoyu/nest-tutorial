@@ -3,231 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NestJS 提供者(Provider)详解</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <title>NestJS 提供者 (Provider) 教学</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
             display: flex;
             min-height: 100vh;
         }
-        
+
         .sidebar {
             width: 280px;
-            background-color: #f8f9fa;
+            background: #2d3748;
+            color: white;
             padding: 20px;
-            border-right: 1px solid #e9ecef;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
-        
+
         .sidebar h2 {
+            color: #63b3ed;
             margin-bottom: 20px;
-            color: #343a40;
-            font-size: 1.5rem;
+            font-size: 1.2em;
+            border-bottom: 2px solid #4a5568;
+            padding-bottom: 10px;
         }
-        
+
         .sidebar ul {
             list-style: none;
         }
-        
+
         .sidebar li {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        
+
         .sidebar a {
-            color: #495057;
+            color: #e2e8f0;
             text-decoration: none;
             display: block;
-            padding: 5px 0;
-            border-left: 3px solid transparent;
-            padding-left: 10px;
-            transition: all 0.2s;
-        }
-        
-        .sidebar a:hover {
-            color: #0d6efd;
-            border-left-color: #0d6efd;
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-        
-        .sidebar .sub-menu {
-            margin-left: 15px;
-            margin-top: 5px;
-            display: none;
-        }
-        
-        .sidebar .active > .sub-menu {
-            display: block;
-        }
-        
-        .sidebar .active > a {
-            color: #0d6efd;
-            border-left-color: #0d6efd;
-            font-weight: 500;
-        }
-        
-        .content {
-            flex: 1;
-            padding: 30px;
-            margin-left: 280px;
-            max-width: calc(100% - 280px);
-        }
-        
-        h1, h2, h3, h4 {
-            margin-top: 1.5em;
-            margin-bottom: 0.75em;
-            color: #212529;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            border-bottom: 2px solid #f1f3f5;
-            padding-bottom: 0.5em;
-            margin-top: 0;
-        }
-        
-        h2 {
-            font-size: 2rem;
-        }
-        
-        h3 {
-            font-size: 1.5rem;
-        }
-        
-        h4 {
-            font-size: 1.25rem;
-        }
-        
-        p {
-            margin-bottom: 1rem;
-        }
-        
-        pre {
-            margin: 1.5em 0;
+            padding: 8px 12px;
             border-radius: 6px;
-            overflow: auto;
-        }
-        
-        code {
-            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            transition: all 0.2s;
             font-size: 0.9em;
-            background-color: #f1f3f5;
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
         }
-        
-        pre code {
-            background-color: transparent;
-            padding: 0;
+
+        .sidebar a:hover {
+            background: #4a5568;
+            color: #63b3ed;
         }
-        
-        ul, ol {
-            margin-bottom: 1rem;
-            padding-left: 2rem;
+
+        .sidebar .level-2 {
+            padding-left: 20px;
+            font-size: 0.85em;
         }
-        
-        .section {
-            scroll-margin-top: 30px;
+
+        .sidebar .level-3 {
+            padding-left: 35px;
+            font-size: 0.8em;
+            color: #a0aec0;
         }
-        
-        .note {
-            background-color: #e7f5ff;
-            border-left: 4px solid #4dabf7;
-            padding: 15px;
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px;
+            max-width: calc(100vw - 280px);
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            color: #2d3748;
+            font-size: 1.8em;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #63b3ed;
+        }
+
+        h3 {
+            color: #4a5568;
+            font-size: 1.4em;
+            margin: 25px 0 15px 0;
+            padding-left: 15px;
+            border-left: 4px solid #63b3ed;
+        }
+
+        h4 {
+            color: #718096;
+            font-size: 1.2em;
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 16px;
+            text-align: justify;
+            color: #4a5568;
+        }
+
+        .intro-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            line-height: 1.7;
+        }
+
+        .highlight-box {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            border-left: 4px solid #38b2ac;
+            padding: 20px;
             margin: 20px 0;
-            border-radius: 4px;
+            border-radius: 8px;
         }
-        
-        .warning {
-            background-color: #fff9db;
-            border-left: 4px solid #ffd43b;
-            padding: 15px;
+
+        .warning-box {
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            border-left: 4px solid #ed8936;
+            padding: 20px;
             margin: 20px 0;
-            border-radius: 4px;
+            border-radius: 8px;
         }
-        
+
+        ul {
+            margin: 16px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        pre {
+            background: #2d3748 !important;
+            border-radius: 8px;
+            padding: 20px !important;
+            margin: 20px 0 !important;
+            overflow-x: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        code {
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        .inline-code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 1.5em 0;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
-        table, th, td {
-            border: 1px solid #e9ecef;
-        }
-        
+
         th, td {
             padding: 12px 15px;
             text-align: left;
+            border-bottom: 1px solid #e2e8f0;
         }
-        
+
         th {
-            background-color: #f8f9fa;
+            background: #4a5568;
+            color: white;
+            font-weight: 600;
         }
-        
-        tr:nth-child(even) {
-            background-color: #f8f9fa;
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #63b3ed;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 179, 237, 0.3);
+            transition: all 0.3s;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-top:hover {
+            background: #4299e1;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+                max-width: 100vw;
+            }
         }
     </style>
 </head>
 <body>
-    <aside class="sidebar">
-        <h2>目录</h2>
-        <ul>
-            <li><a href="#introduction">提供者简介</a></li>
-            <li><a href="#what-is-provider">什么是提供者？</a></li>
-            <li><a href="#create-service">创建服务</a></li>
-            <li><a href="#use-service">在控制器中使用服务</a></li>
-            <li><a href="#register-provider">注册提供者</a></li>
-            <li><a href="#async-provider">异步提供者</a></li>
-            <li>
-                <a href="#advanced">提供者的进阶玩法</a>
-                <ul class="sub-menu">
-                    <li><a href="#scope">作用域</a></li>
-                    <li><a href="#optional">可选依赖</a></li>
-                    <li><a href="#property-injection">属性注入</a></li>
-                    <li><a href="#manual-instance">手动获取实例</a></li>
-                    <li><a href="#custom-provider">自定义提供者</a></li>
-                </ul>
-            </li>
-        </ul>
-    </aside>
-    
-    <main class="content">
-        <h1>NestJS 提供者(Provider)详解</h1>
-        
-        <section id="introduction" class="section">
-            <p>在 Nest 的世界里，提供者（Provider）就像是应用程序的"专业工匠"。
-            如果把应用比作一座房子，那么提供者就是电工、木匠、水管工这些各司其职的专业人士。
-            每个提供者都有自己的专长，通过依赖注入的方式为应用提供服务。</p>
-        </section>
-        
-        <section id="what-is-provider" class="section">
-            <h2>什么是提供者？</h2>
-            <p>提供者本质上是一个可以被注入到其他类中的类。它们承担着不同的职责：</p>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>📚 课程大纲</h2>
             <ul>
-                <li>服务（Service）：处理业务逻辑和数据操作</li>
-                <li>仓库（Repository）：专门负责与数据库打交道</li>
-                <li>工厂（Factory）：负责创建复杂对象</li>
-                <li>辅助类（Helper）：提供各种通用功能</li>
+                <li><a href="#intro">🏠 什么是提供者？</a></li>
+                <li><a href="#create-service">🐱 创建你的第一个服务</a></li>
+                <li><a href="#use-service">🎯 在控制器中使用服务</a></li>
+                <li><a href="#register-provider">📝 注册提供者</a></li>
+                <li><a href="#async-provider">⚡ 异步提供者</a></li>
+                <li><a href="#advanced">🚀 提供者的进阶玩法</a>
+                    <ul>
+                        <li><a href="#scope" class="level-2">🔄 作用域</a>
+                            <ul>
+                                <li><a href="#default-scope" class="level-3">DEFAULT 单例</a></li>
+                                <li><a href="#request-scope" class="level-3">REQUEST 请求作用域</a></li>
+                                <li><a href="#transient-scope" class="level-3">TRANSIENT 瞬态作用域</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#optional-deps" class="level-2">❓ 可选依赖</a></li>
+                        <li><a href="#property-injection" class="level-2">🏷️ 属性注入</a></li>
+                        <li><a href="#manual-instance" class="level-2">🔧 手动获取实例</a></li>
+                        <li><a href="#custom-providers" class="level-2">⚙️ 自定义提供者</a></li>
+                    </ul>
+                </li>
             </ul>
-            <p>提供者最大的优势就是可以通过依赖注入（Dependency Injection）的方式被"送达"到需要它们的地方，这让代码变得更加模块化和可测试。</p>
-        </section>
-        
-        <section id="create-service" class="section">
-            <h2>创建你的一个服务 (Service)</h2>
-            <p>让我们通过一个管理猫咪信息的例子来了解如何创建服务。假设我们需要一个 CatsService 来处理所有关于猫咪的操作：</p>
-            <pre><code class="language-typescript">import { Injectable } from '@nestjs/common';
+        </nav>
+
+        <main class="main-content">
+            <div class="content-section">
+                <h1>NestJS 提供者 (Provider) 完全指南</h1>
+                <div class="intro-box">
+                    在 Nest 的世界里，提供者（Provider）就像是应用程序的"专业工匠"。
+                    如果把应用比作一座房子，那么提供者就是电工、木匠、水管工这些各司其职的专业人士。
+                    每个提供者都有自己的专长，通过依赖注入的方式为应用提供服务。
+                </div>
+            </div>
+
+            <div class="content-section" id="intro">
+                <h2>什么是提供者？</h2>
+                <p>提供者本质上是一个可以被注入到其他类中的类。它们承担着不同的职责：</p>
+                <ul>
+                    <li><strong>服务（Service）</strong>：处理业务逻辑和数据操作</li>
+                    <li><strong>仓库（Repository）</strong>：专门负责与数据库打交道</li>
+                    <li><strong>工厂（Factory）</strong>：负责创建复杂对象</li>
+                    <li><strong>辅助类（Helper）</strong>：提供各种通用功能</li>
+                </ul>
+                <div class="highlight-box">
+                    <p><strong>💡 核心优势：</strong> 提供者最大的优势就是可以通过依赖注入（Dependency Injection）的方式被"送达"到需要它们的地方，这让代码变得更加模块化和可测试。</p>
+                </div>
+            </div>
+
+            <div class="content-section" id="create-service">
+                <h2>创建你的第一个服务 (Service)</h2>
+                <p>让我们通过一个管理猫咪信息的例子来了解如何创建服务。假设我们需要一个 CatsService 来处理所有关于猫咪的操作：</p>
+                
+<pre><code class="language-typescript">import { Injectable } from '@nestjs/common';
 import { Cat } from './interfaces/cat.interface';
 
 @Injectable() // 这个装饰器是关键
@@ -244,13 +336,17 @@ export class CatsService {
     return this.cats;
   }
 }</code></pre>
-            <p><code>@Injectable()</code> 装饰器相当于告诉 Nest：CatsService 这个类是个提供者，你可以管理它，也可以把它'注入'给别人用。</p>
-        </section>
-        
-        <section id="use-service" class="section">
-            <h2>在控制器中使用服务</h2>
-            <p>现在我们有了 CatsService，接下来看看如何在控制器中使用它：</p>
-            <pre><code class="language-typescript">import { Controller, Get, Post, Body } from '@nestjs/common';
+
+                <div class="highlight-box">
+                    <p><strong>🔑 关键点：</strong> <code class="inline-code">@Injectable()</code> 装饰器相当于告诉 Nest：CatsService 这个类是个提供者，你可以管理它，也可以把它'注入'给别人用。</p>
+                </div>
+            </div>
+
+            <div class="content-section" id="use-service">
+                <h2>在控制器中使用服务</h2>
+                <p>现在我们有了 CatsService，接下来看看如何在控制器中使用它：</p>
+
+<pre><code class="language-typescript">import { Controller, Get, Post, Body } from '@nestjs/common';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { CatsService } from './cats.service';
 import { Cat } from './interfaces/cat.interface';
@@ -271,14 +367,17 @@ export class CatsController {
     return this.catsService.findAll();
   }
 }</code></pre>
-            <p>这里的关键是构造函数中的 <code>constructor(private readonly catsService: CatsService)</code>。
-            你只需要声明需要什么类型的依赖，NestJS 就会自动创建实例并注入进来。这就是依赖注入的魔法。</p>
-        </section>
-        
-        <section id="register-provider" class="section">
-            <h2>注册提供者</h2>
-            <p>光定义服务还不够，你还需要告诉 Nest 这个服务的存在。这就需要在模块中注册它：</p>
-            <pre><code class="language-typescript">// cats.module.ts
+
+                <div class="highlight-box">
+                    <p><strong>✨ 依赖注入的魔法：</strong> 这里的关键是构造函数中的 <code class="inline-code">constructor(private readonly catsService: CatsService)</code>。你只需要声明需要什么类型的依赖，NestJS 就会自动创建实例并注入进来。</p>
+                </div>
+            </div>
+
+            <div class="content-section" id="register-provider">
+                <h2>注册提供者</h2>
+                <p>光定义服务还不够，你还需要告诉 Nest 这个服务的存在。这就需要在模块中注册它：</p>
+
+<pre><code class="language-typescript">// cats.module.ts
 import { Module } from '@nestjs/common';
 import { CatsController } from './cats.controller';
 import { CatsService } from './cats.service';
@@ -289,8 +388,10 @@ import { CatsService } from './cats.service';
   exports: [CatsService],   // 如果其他模块需要使用，记得导出
 })
 export class CatsModule {}</code></pre>
-            <p>然后在主模块中导入这个特性模块：</p>
-            <pre><code class="language-typescript">// app.module.ts
+
+                <p>然后在主模块中导入这个特性模块：</p>
+
+<pre><code class="language-typescript">// app.module.ts
 import { Module } from '@nestjs/common';
 import { CatsModule } from './cats/cats.module';
 
@@ -298,14 +399,19 @@ import { CatsModule } from './cats/cats.module';
   imports: [CatsModule], // 导入特性模块
 })
 export class AppModule {}</code></pre>
-            <p>当 Nest 初始化 CatsController 时，发现它需要 CatsService，依赖注入系统就会自动找到已注册的提供者，实例化它并注入到控制器中。</p>
-        </section>
-        
-        <section id="async-provider" class="section">
-            <h2>异步提供者：处理复杂的初始化</h2>
-            <p>想象一下这样的场景：你的应用需要在启动时连接数据库，只有连接成功后，其他服务才能正常工作。如果用传统方式，你可能需要写一堆回调或者 Promise 链，代码会变得复杂且难以维护。</p>
-            <p>异步提供者的解决方案非常直观，它使用 async/await 配合 useFactory：</p>
-            <pre><code class="language-typescript">import { DataSource } from 'typeorm';
+
+                <div class="highlight-box">
+                    <p><strong>🔄 自动化流程：</strong> 当 Nest 初始化 CatsController 时，发现它需要 CatsService，依赖注入系统就会自动找到已注册的提供者，实例化它并注入到控制器中。</p>
+                </div>
+            </div>
+
+            <div class="content-section" id="async-provider">
+                <h2>异步提供者：处理复杂的初始化</h2>
+                <p>想象一下这样的场景：你的应用需要在启动时连接数据库，只有连接成功后，其他服务才能正常工作。如果用传统方式，你可能需要写一堆回调或者 Promise 链，代码会变得复杂且难以维护。</p>
+                
+                <p>异步提供者的解决方案非常直观，它使用 async/await 配合 useFactory：</p>
+
+<pre><code class="language-typescript">import { DataSource } from 'typeorm';
 
 // 在模块的 providers 中配置
 {
@@ -324,9 +430,14 @@ export class AppModule {}</code></pre>
     return dataSource;
   },
 }</code></pre>
-            <p>Nest 会智能地检测到你的 useFactory 函数是异步的，然后耐心等待 Promise 完成。只有当数据库连接真正建立后，那些依赖这个连接的服务才会开始实例化。</p>
-            <p>在服务中注入使用：</p>
-            <pre><code class="language-typescript">import { Injectable, Inject } from '@nestjs/common';
+
+                <div class="highlight-box">
+                    <p><strong>⏳ 智能等待：</strong> Nest 会智能地检测到你的 useFactory 函数是异步的，然后耐心等待 Promise 完成。只有当数据库连接真正建立后，那些依赖这个连接的服务才会开始实例化。</p>
+                </div>
+
+                <p>在服务中注入使用：</p>
+
+<pre><code class="language-typescript">import { Injectable, Inject } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -347,8 +458,10 @@ export class UserService {
     return await userRepository.save(user);
   }
 }</code></pre>
-            <p>如果你的工厂函数还需要其他依赖，可以通过 inject 参数注入：</p>
-            <pre><code class="language-typescript">import { Module } from '@nestjs/common';
+
+                <p>如果你的工厂函数还需要其他依赖，可以通过 inject 参数注入：</p>
+
+<pre><code class="language-typescript">import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -366,17 +479,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   exports: ['DATABASE_CONNECTION'],
 })
 export class DatabaseModule {}</code></pre>
-        </section>
-        
-        <section id="advanced" class="section">
-            <h2>提供者的一些进阶玩法</h2>
-            
-            <section id="scope" class="section">
-                <h3>作用域</h3>
-                <p>NestJS 中的提供者默认采用单例模式（整个应用共享一个实例），但可以根据业务需求调整作用域。</p>
+            </div>
+
+            <div class="content-section" id="advanced">
+                <h2>提供者的进阶玩法</h2>
                 
-                <h4>1. DEFAULT（默认单例）</h4>
-                <pre><code class="language-typescript">import { Injectable } from '@nestjs/common';
+                <div id="scope">
+                    <h3>作用域</h3>
+                    <p>NestJS 中的提供者默认采用单例模式（整个应用共享一个实例），但可以根据业务需求调整作用域。</p>
+
+                    <div id="default-scope">
+                        <h4>1. DEFAULT（默认单例）</h4>
+<pre><code class="language-typescript">import { Injectable } from '@nestjs/common';
 
 @Injectable() // 等同于 @Injectable({ scope: Scope.DEFAULT })
 export class UserService {
@@ -388,9 +502,11 @@ export class UserService {
     console.log('UserService 实例创建');
   }
 }</code></pre>
-                
-                <h4>2. REQUEST（请求作用域）</h4>
-                <pre><code class="language-typescript">import { Injectable, Scope } from '@nestjs/common';
+                    </div>
+
+                    <div id="request-scope">
+                        <h4>2. REQUEST（请求作用域）</h4>
+<pre><code class="language-typescript">import { Injectable, Scope } from '@nestjs/common';
 
 @Injectable({ scope: Scope.REQUEST })
 export class RequestScopedService {
@@ -402,9 +518,11 @@ export class RequestScopedService {
     console.log('RequestScopedService 实例创建');
   }
 }</code></pre>
-                
-                <h4>3. TRANSIENT（瞬态作用域）</h4>
-                <pre><code class="language-typescript">import { Injectable, Scope } from '@nestjs/common';
+                    </div>
+
+                    <div id="transient-scope">
+                        <h4>3. TRANSIENT（瞬态作用域）</h4>
+<pre><code class="language-typescript">import { Injectable, Scope } from '@nestjs/common';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class TransientService {
@@ -416,44 +534,46 @@ export class TransientService {
     console.log(`TransientService 实例创建，ID: ${this.instanceId}`);
   }
 }</code></pre>
-                
-                <h4>使用场景对比</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>作用域</th>
-                            <th>性能</th>
-                            <th>内存占用</th>
-                            <th>适用场景</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>DEFAULT</td>
-                            <td>最优</td>
-                            <td>最低</td>
-                            <td>无状态服务、工具类、数据库连接</td>
-                        </tr>
-                        <tr>
-                            <td>REQUEST</td>
-                            <td>中等</td>
-                            <td>中等</td>
-                            <td>用户认证、请求日志、请求上下文</td>
-                        </tr>
-                        <tr>
-                            <td>TRANSIENT</td>
-                            <td>较差</td>
-                            <td>较高</td>
-                            <td>需要完全隔离状态的特殊场景</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-            
-            <section id="optional" class="section">
-                <h3>可选依赖</h3>
-                <p>有时某些依赖不是必需的，可以使用 <code>@Optional()</code> 装饰器：</p>
-                <pre><code class="language-typescript">import { Injectable, Optional } from '@nestjs/common';
+                    </div>
+
+                    <p><strong>使用场景对比：</strong></p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>作用域</th>
+                                <th>性能</th>
+                                <th>内存占用</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>DEFAULT</td>
+                                <td>最优</td>
+                                <td>最低</td>
+                                <td>无状态服务、工具类、数据库连接</td>
+                            </tr>
+                            <tr>
+                                <td>REQUEST</td>
+                                <td>中等</td>
+                                <td>中等</td>
+                                <td>用户认证、请求日志、请求上下文</td>
+                            </tr>
+                            <tr>
+                                <td>TRANSIENT</td>
+                                <td>较差</td>
+                                <td>较高</td>
+                                <td>需要完全隔离状态的特殊场景</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="optional-deps">
+                    <h3>可选依赖</h3>
+                    <p>有时某些依赖不是必需的，可以使用 <code class="inline-code">@Optional()</code> 装饰器：</p>
+
+<pre><code class="language-typescript">import { Injectable, Optional } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
@@ -471,13 +591,17 @@ export class AppService {
     this.analyticsService?.track('Action performed');
   }
 }</code></pre>
-                <p>这在开发插件系统或可选功能时特别有用。</p>
-            </section>
-            
-            <section id="property-injection" class="section">
-                <h3>属性注入</h3>
-                <p>除了构造函数注入，Nest 也支持属性注入：</p>
-                <pre><code class="language-typescript">import { Injectable, Inject } from '@nestjs/common';
+
+                    <div class="highlight-box">
+                        <p><strong>🔌 插件化开发：</strong> 这在开发插件系统或可选功能时特别有用。</p>
+                    </div>
+                </div>
+
+                <div id="property-injection">
+                    <h3>属性注入</h3>
+                    <p>除了构造函数注入，Nest 也支持属性注入：</p>
+
+<pre><code class="language-typescript">import { Injectable, Inject } from '@nestjs/common';
 
 @Injectable()
 export class CatsService {
@@ -488,13 +612,17 @@ export class CatsService {
     return this.configService.get('cats');
   }
 }</code></pre>
-                <p>不过，通常还是推荐用构造函数注入，因为依赖关系更清晰，也更便于测试。</p>
-            </section>
-            
-            <section id="manual-instance" class="section">
-                <h3>手动获取实例</h3>
-                <p>有时需要在运行时动态获取提供者实例，可以使用 ModuleRef：</p>
-                <pre><code class="language-typescript">import { Injectable, ModuleRef } from '@nestjs/core';
+
+                    <div class="warning-box">
+                        <p><strong>⚠️ 推荐建议：</strong> 不过，通常还是推荐用构造函数注入，因为依赖关系更清晰，也更便于测试。</p>
+                    </div>
+                </div>
+
+                <div id="manual-instance">
+                    <h3>手动获取实例</h3>
+                    <p>有时需要在运行时动态获取提供者实例，可以使用 ModuleRef：</p>
+
+<pre><code class="language-typescript">import { Injectable, ModuleRef } from '@nestjs/core';
 import { UserService } from '../user/user.service';
 import { LoggerService } from '../logger/logger.service';
 
@@ -524,63 +652,221 @@ export class DynamicService {
     }
   }
 }</code></pre>
-            </section>
-            
-            <section id="custom-provider" class="section">
-                <h3>自定义提供者</h3>
-                <p>到目前为止，我们看到的提供者都是基于类的。但 Nest 的依赖注入系统非常灵活，它不仅支持提供类作为 Provider，还可以提供：</p>
-                <ul>
-                    <li>普通值 (Value Providers)： 使用 useValue 提供常量、配置对象等。</li>
-                    <li>类 (Class Providers)： 使用 useClass 提供一个类的实例（我们之前看到的默认方式）。</li>
-                    <li>工厂函数 (Factory Providers)： 使用 useFactory 根据动态逻辑（可以是同步或异步）创建和提供实例（如之前的数据库连接示例）。</li>
-                    <li>别名 (Alias Providers)： 使用 useExisting 为已存在的提供者创建一个别名或不同的 token。</li>
-                </ul>
-                <p>这种灵活性使得你可以用非常精细的方式来管理和提供应用程序中的各种依赖。我们后面会单独介绍下各种自定义提供者的具体使用方式和场景。</p>
-            </section>
-        </section>
-    </main>
+                </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+                <div id="custom-providers">
+                    <h3>自定义提供者</h3>
+                    <p>到目前为止，我们看到的提供者都是基于类的。但 Nest 的依赖注入系统非常灵活，它不仅支持提供类作为 Provider，还可以提供：</p>
+                    
+                    <ul>
+                        <li><strong>普通值 (Value Providers)</strong>：使用 <code class="inline-code">useValue</code> 提供常量、配置对象等。</li>
+                        <li><strong>类 (Class Providers)</strong>：使用 <code class="inline-code">useClass</code> 提供一个类的实例（我们之前看到的默认方式）。</li>
+                        <li><strong>工厂函数 (Factory Providers)</strong>：使用 <code class="inline-code">useFactory</code> 根据动态逻辑（可以是同步或异步）创建和提供实例（如之前的数据库连接示例）。</li>
+                        <li><strong>别名 (Alias Providers)</strong>：使用 <code class="inline-code">useExisting</code> 为已存在的提供者创建一个别名或不同的 token。</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <p><strong>🎯 灵活性：</strong> 这种灵活性使得你可以用非常精细的方式来管理和提供应用程序中的各种依赖。我们后面会单独介绍下各种自定义提供者的具体使用方式和场景。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="scroll-top" onclick="scrollToTop()">
+        ↑
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 处理目录点击事件
-            const menuItems = document.querySelectorAll('.sidebar a');
-            menuItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    const parent = item.parentElement;
-                    if (parent.querySelector('.sub-menu')) {
-                        parent.classList.toggle('active');
-                    }
-                });
+        // 平滑滚动到顶部
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // 显示/隐藏回到顶部按钮
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.querySelector('.scroll-top');
+            if (window.pageYOffset > 300) {
+                scrollTop.classList.add('visible');
+            } else {
+                scrollTop.classList.remove('visible');
+            }
+        });
+
+        // 侧边栏导航高亮
+        const sections = document.querySelectorAll('.content-section[id]');
+        const navLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+
+        function updateActiveNav() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
             });
 
-            // 根据滚动位置高亮当前目录项
-            const sections = document.querySelectorAll('.section');
-            window.addEventListener('scroll', () => {
-                let current = '';
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    const sectionHeight = section.clientHeight;
-                    if (pageYOffset >= sectionTop - 100) {
-                        current = section.getAttribute('id');
-                    }
-                });
+            navLinks.forEach(link => {
+                link.style.background = '';
+                link.style.color = '';
+                if (link.getAttribute('href') === '#' + current) {
+                    link.style.background = '#4a5568';
+                    link.style.color = '#63b3ed';
+                }
+            });
+        }
 
-                menuItems.forEach(item => {
-                    item.parentElement.classList.remove('active');
-                    if (item.getAttribute('href') === `#${current}`) {
-                        item.parentElement.classList.add('active');
-                        
-                        // 如果是子菜单项，也激活父菜单
-                        const parentLi = item.closest('.sub-menu')?.parentElement;
-                        if (parentLi) {
-                            parentLi.classList.add('active');
-                        }
-                    }
-                });
+        window.addEventListener('scroll', updateActiveNav);
+        updateActiveNav();
+
+        // 平滑滚动到锚点
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                      behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
         });
+
+        // 代码块复制功能
+        document.querySelectorAll('pre code').forEach((block) => {
+            const button = document.createElement('button');
+            button.className = 'copy-button';
+            button.textContent = '复制';
+            button.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: #4a5568;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                opacity: 0;
+                transition: opacity 0.3s;
+            `;
+            
+            const pre = block.parentElement;
+            pre.style.position = 'relative';
+            pre.appendChild(button);
+            
+            pre.addEventListener('mouseenter', () => {
+                button.style.opacity = '1';
+            });
+            
+            pre.addEventListener('mouseleave', () => {
+                button.style.opacity = '0';
+            });
+            
+            button.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(block.textContent);
+                    button.textContent = '已复制!';
+                    button.style.background = '#38a169';
+                    setTimeout(() => {
+                        button.textContent = '复制';
+                        button.style.background = '#4a5568';
+                    }, 2000);
+                } catch (err) {
+                    console.error('复制失败:', err);
+                }
+            });
+        });
+
+        // 添加加载动画
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // 响应式侧边栏
+        function createMobileMenu() {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const mainContent = document.querySelector('.main-content');
+                
+                // 创建移动端菜单按钮
+                if (!document.querySelector('.mobile-menu-btn')) {
+                    const menuBtn = document.createElement('button');
+                    menuBtn.className = 'mobile-menu-btn';
+                    menuBtn.innerHTML = '☰';
+                    menuBtn.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 20px;
+                        z-index: 1001;
+                        background: #2d3748;
+                        color: white;
+                        border: none;
+                        padding: 10px 15px;
+                        border-radius: 5px;
+                        font-size: 18px;
+                        cursor: pointer;
+                    `;
+                    
+                    document.body.appendChild(menuBtn);
+                    
+                    menuBtn.addEventListener('click', () => {
+                        if (sidebar.style.transform === 'translateX(0px)') {
+                            sidebar.style.transform = 'translateX(-100%)';
+                        } else {
+                            sidebar.style.transform = 'translateX(0px)';
+                        }
+                    });
+                    
+                    // 点击主内容区域关闭侧边栏
+                    mainContent.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) {
+                            sidebar.style.transform = 'translateX(-100%)';
+                        }
+                    });
+                }
+            }
+        }
+
+        window.addEventListener('resize', createMobileMenu);
+        createMobileMenu();
+
+        // 添加打印样式
+        const printStyles = `
+            @media print {
+                .sidebar, .scroll-top, .copy-button, .mobile-menu-btn {
+                    display: none !important;
+                }
+                .main-content {
+                    margin-left: 0 !important;
+                    max-width: 100% !important;
+                }
+                .content-section {
+                    box-shadow: none !important;
+                    border: 1px solid #ddd !important;
+                    page-break-inside: avoid;
+                }
+                pre {
+                    page-break-inside: avoid;
+                    background: #f5f5f5 !important;
+                    color: #333 !important;
+                }
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = printStyles;
+        document.head.appendChild(styleSheet);
     </script>
 </body>
 </html>
