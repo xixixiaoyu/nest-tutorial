@@ -143,9 +143,68 @@
       li {
         margin-bottom: 0.5em;
       }
+      .sidebar {
+        position: fixed;
+        top: 20px;
+        right: 20px; /* Changed from left to right */
+        width: 250px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+      .sidebar h3 {
+        margin-top: 0;
+        font-size: 1.2em;
+        color: #343a40;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+      }
+      .sidebar ul {
+        list-style: none;
+        padding-left: 0;
+      }
+      .sidebar ul li a {
+        display: block;
+        padding: 8px 0;
+        color: #495057;
+        text-decoration: none;
+        transition: color 0.2s ease-in-out;
+        font-size: 0.95em;
+      }
+      .sidebar ul li a:hover,
+      .sidebar ul li a.active {
+        color: #007bff;
+        font-weight: bold;
+      }
+      .sidebar ul ul {
+        padding-left: 15px;
+        margin-top: 5px;
+      }
+      .sidebar ul ul li a {
+        font-size: 0.9em;
+        color: #6c757d;
+      }
+      .sidebar ul ul li a:hover,
+      .sidebar ul ul li a.active {
+        color: #0056b3;
+      }
+      /* Adjust container margin to avoid overlap with sidebar */
+      .container {
+        margin-right: 300px; /* sidebar width + some padding */
+        margin-left: auto; /* Reset left margin if previously set */
+      }
     </style>
   </head>
   <body>
+    <aside class="sidebar" id="tableOfContents">
+      <h3>目录</h3>
+      <ul></ul>
+    </aside>
     <div class="container">
       <h1>NestJS 提供者 (Provider) 详解</h1>
 
@@ -653,5 +712,81 @@
       </section>
     </div>
     <span class="code-comment"><!-- /.container --></span>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const tocContainer = document.querySelector('#tableOfContents ul');
+        const headers = document.querySelectorAll(
+          '.container h2, .container h3',
+        );
+        let h2List = null;
+
+        headers.forEach((header, index) => {
+          const id = 'section-' + index;
+          header.id = id;
+
+          const listItem = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = '#' + id;
+          link.textContent = header.textContent;
+
+          if (header.tagName === 'H2') {
+            listItem.appendChild(link);
+            tocContainer.appendChild(listItem);
+            h2List = document.createElement('ul'); // Create a new sublist for H3s under this H2
+            listItem.appendChild(h2List);
+          } else if (header.tagName === 'H3' && h2List) {
+            // Only add H3 if it's under an H2's context
+            const subListItem = document.createElement('li');
+            subListItem.appendChild(link);
+            h2List.appendChild(subListItem);
+          }
+        });
+
+        // Optional: Smooth scrolling
+        tocContainer.addEventListener('click', function (event) {
+          if (event.target.tagName === 'A') {
+            event.preventDefault();
+            const targetId = event.target.getAttribute('href');
+            document.querySelector(targetId).scrollIntoView({
+              behavior: 'smooth',
+            });
+          }
+        });
+
+        // Optional: Active link highlighting on scroll
+        const links = tocContainer.querySelectorAll('a');
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const id = entry.target.getAttribute('id');
+              const correspondingLink = tocContainer.querySelector(
+                `a[href="#${id}"]`,
+              );
+              if (entry.isIntersecting) {
+                links.forEach((l) => l.classList.remove('active'));
+                if (correspondingLink) {
+                  correspondingLink.classList.add('active');
+                  // Expand parent H2 if an H3 is active
+                  let parentLi = correspondingLink.closest('ul').closest('li');
+                  if (parentLi && parentLi.querySelector('a')) {
+                    parentLi.querySelector('a').classList.add('active');
+                  }
+                }
+              } else {
+                if (correspondingLink) {
+                  // correspondingLink.classList.remove('active'); // Optional: remove active only when another becomes active
+                }
+              }
+            });
+          },
+          { rootMargin: '-50% 0px -50% 0px' },
+        ); // Adjust rootMargin to trigger when element is in middle of viewport
+
+        headers.forEach((header) => {
+          observer.observe(header);
+        });
+      });
+    </script>
   </body>
 </html>
