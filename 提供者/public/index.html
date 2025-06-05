@@ -1,792 +1,586 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NestJS 提供者 (Provider) 详解</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NestJS 提供者(Provider)详解</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
     <style>
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-          'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
-          'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-        line-height: 1.7;
-        color: #333;
-        background-color: #f9f9f9;
-        margin: 0;
-        padding: 0;
-      }
-      .container {
-        max-width: 900px;
-        margin: 20px auto;
-        background-color: #fff;
-        padding: 30px 40px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      }
-      h1,
-      h2,
-      h3 {
-        color: #2c3e50;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-        margin-top: 1.5em;
-        margin-bottom: 1em;
-      }
-      h1 {
-        text-align: center;
-        margin-top: 0;
-        border-bottom: 2px solid #3498db;
-        font-size: 2.2em;
-      }
-      h2 {
-        font-size: 1.8em;
-        color: #3498db;
-      }
-      h3 {
-        font-size: 1.4em;
-        color: #16a085;
-        border-bottom: none;
-      }
-      p {
-        margin-bottom: 1em;
-      }
-      code {
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        background-color: #ecf0f1;
-        padding: 0.2em 0.4em;
-        border-radius: 3px;
-        font-size: 0.9em;
-        color: #c0392b; /* 更醒目的颜色 */
-      }
-      pre {
-        background-color: #2d2d2d; /* 深色背景 */
-        color: #f8f8f2; /* 亮色文字 */
-        padding: 15px;
-        border-radius: 5px;
-        overflow-x: auto;
-        font-size: 0.9em;
-        line-height: 1.5;
-        margin: 1.5em 0;
-        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-      }
-      pre code {
-        background-color: transparent;
-        padding: 0;
-        color: inherit; /* 继承 pre 的颜色 */
-        font-size: inherit; /* 继承 pre 的字号 */
-      }
-      .code-comment {
-        color: #7f8c8d; /* 注释颜色 */
-        font-style: italic;
-      }
-      .code-keyword {
-        color: #f92672; /* 关键字颜色 (粉色) */
-        font-weight: bold;
-      }
-      .code-decorator {
-        color: #a6e22e; /* 装饰器颜色 (绿色) */
-      }
-      .code-string {
-        color: #e6db74; /* 字符串颜色 (黄色) */
-      }
-      .code-class {
-        color: #66d9ef; /* 类名颜色 (蓝色) */
-      }
-      .code-function {
-        color: #a6e22e; /* 函数名颜色 (绿色) */
-      }
-      .code-number {
-        color: #ae81ff; /* 数字颜色 (紫色) */
-      }
-      .analogy {
-        background-color: #e8f4fd;
-        border-left: 4px solid #3498db;
-        padding: 15px;
-        margin: 1.5em 0;
-        font-style: italic;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1.5em 0;
-      }
-      th,
-      td {
-        border: 1px solid #ddd;
-        padding: 10px 12px;
-        text-align: left;
-      }
-      th {
-        background-color: #f2f2f2;
-        font-weight: bold;
-        color: #555;
-      }
-      tr:nth-child(even) {
-        background-color: #f9f9f9;
-      }
-      .highlight {
-        background-color: #fff3cd;
-        padding: 2px 5px;
-        border-radius: 3px;
-        font-weight: bold;
-      }
-      .date-time {
-        text-align: right;
-        font-size: 0.85em;
-        color: #7f8c8d;
-        margin-bottom: 20px;
-      }
-      ul {
-        padding-left: 20px;
-      }
-      li {
-        margin-bottom: 0.5em;
-      }
-      .sidebar {
-        position: fixed;
-        top: 20px;
-        right: 20px; /* Changed from left to right */
-        width: 250px;
-        max-height: calc(100vh - 40px);
-        overflow-y: auto;
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-      }
-      .sidebar h3 {
-        margin-top: 0;
-        font-size: 1.2em;
-        color: #343a40;
-        border-bottom: 1px solid #dee2e6;
-        padding-bottom: 8px;
-        margin-bottom: 15px;
-      }
-      .sidebar ul {
-        list-style: none;
-        padding-left: 0;
-      }
-      .sidebar ul li a {
-        display: block;
-        padding: 8px 0;
-        color: #495057;
-        text-decoration: none;
-        transition: color 0.2s ease-in-out;
-        font-size: 0.95em;
-      }
-      .sidebar ul li a:hover,
-      .sidebar ul li a.active {
-        color: #007bff;
-        font-weight: bold;
-      }
-      .sidebar ul ul {
-        padding-left: 15px;
-        margin-top: 5px;
-      }
-      .sidebar ul ul li a {
-        font-size: 0.9em;
-        color: #6c757d;
-      }
-      .sidebar ul ul li a:hover,
-      .sidebar ul ul li a.active {
-        color: #0056b3;
-      }
-      /* Adjust container margin to avoid overlap with sidebar */
-      .container {
-        margin-right: 300px; /* sidebar width + some padding */
-        margin-left: auto; /* Reset left margin if previously set */
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e9ecef;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar h2 {
+            margin-bottom: 20px;
+            color: #343a40;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar a {
+            color: #495057;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+            border-left: 3px solid transparent;
+            padding-left: 10px;
+            transition: all 0.2s;
+        }
+        
+        .sidebar a:hover {
+            color: #0d6efd;
+            border-left-color: #0d6efd;
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        
+        .sidebar .sub-menu {
+            margin-left: 15px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .sidebar .active > .sub-menu {
+            display: block;
+        }
+        
+        .sidebar .active > a {
+            color: #0d6efd;
+            border-left-color: #0d6efd;
+            font-weight: 500;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 30px;
+            margin-left: 280px;
+            max-width: calc(100% - 280px);
+        }
+        
+        h1, h2, h3, h4 {
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
+            color: #212529;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            border-bottom: 2px solid #f1f3f5;
+            padding-bottom: 0.5em;
+            margin-top: 0;
+        }
+        
+        h2 {
+            font-size: 2rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+        }
+        
+        h4 {
+            font-size: 1.25rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        pre {
+            margin: 1.5em 0;
+            border-radius: 6px;
+            overflow: auto;
+        }
+        
+        code {
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.9em;
+            background-color: #f1f3f5;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+        
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        
+        .section {
+            scroll-margin-top: 30px;
+        }
+        
+        .note {
+            background-color: #e7f5ff;
+            border-left: 4px solid #4dabf7;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning {
+            background-color: #fff9db;
+            border-left: 4px solid #ffd43b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+        }
+        
+        table, th, td {
+            border: 1px solid #e9ecef;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
     </style>
-  </head>
-  <body>
-    <aside class="sidebar" id="tableOfContents">
-      <h3>目录</h3>
-      <ul></ul>
-    </aside>
-    <div class="container">
-      <h1>NestJS 提供者 (Provider) 详解</h1>
-
-      <section>
-        <p class="analogy">
-          💡 在 Nest 的世界里，提供者（Provider）就像是应用程序的
-          <strong class="highlight">"专业工匠"</strong>。<br />
-          如果把应用比作一座房子，那么提供者就是电工、木匠、水管工这些各司其职的专业人士。<br />
-          每个提供者都有自己的专长，通过
-          <strong class="highlight">依赖注入 (Dependency Injection)</strong>
-          的方式为应用提供服务。
-        </p>
-      </section>
-
-      <section>
-        <h2>什么是提供者？</h2>
-        <p>
-          提供者本质上是一个可以被注入到其他类中的类。它们承担着不同的职责：
-        </p>
+</head>
+<body>
+    <aside class="sidebar">
+        <h2>目录</h2>
         <ul>
-          <li><strong>服务 (Service)：</strong> 处理业务逻辑和数据操作</li>
-          <li><strong>仓库 (Repository)：</strong> 专门负责与数据库打交道</li>
-          <li><strong>工厂 (Factory)：</strong> 负责创建复杂对象</li>
-          <li><strong>辅助类 (Helper)：</strong> 提供各种通用功能</li>
+            <li><a href="#introduction">提供者简介</a></li>
+            <li><a href="#what-is-provider">什么是提供者？</a></li>
+            <li><a href="#create-service">创建服务</a></li>
+            <li><a href="#use-service">在控制器中使用服务</a></li>
+            <li><a href="#register-provider">注册提供者</a></li>
+            <li><a href="#async-provider">异步提供者</a></li>
+            <li>
+                <a href="#advanced">提供者的进阶玩法</a>
+                <ul class="sub-menu">
+                    <li><a href="#scope">作用域</a></li>
+                    <li><a href="#optional">可选依赖</a></li>
+                    <li><a href="#property-injection">属性注入</a></li>
+                    <li><a href="#manual-instance">手动获取实例</a></li>
+                    <li><a href="#custom-provider">自定义提供者</a></li>
+                </ul>
+            </li>
         </ul>
-        <p>
-          提供者最大的优势就是可以通过
-          <strong class="highlight">依赖注入（Dependency Injection）</strong>
-          的方式被 "送达" 到需要它们的地方，这让代码变得更加
-          <strong class="highlight">模块化</strong> 和
-          <strong class="highlight">可测试</strong>。
-        </p>
-      </section>
+    </aside>
+    
+    <main class="content">
+        <h1>NestJS 提供者(Provider)详解</h1>
+        
+        <section id="introduction" class="section">
+            <p>在 Nest 的世界里，提供者（Provider）就像是应用程序的"专业工匠"。
+            如果把应用比作一座房子，那么提供者就是电工、木匠、水管工这些各司其职的专业人士。
+            每个提供者都有自己的专长，通过依赖注入的方式为应用提供服务。</p>
+        </section>
+        
+        <section id="what-is-provider" class="section">
+            <h2>什么是提供者？</h2>
+            <p>提供者本质上是一个可以被注入到其他类中的类。它们承担着不同的职责：</p>
+            <ul>
+                <li>服务（Service）：处理业务逻辑和数据操作</li>
+                <li>仓库（Repository）：专门负责与数据库打交道</li>
+                <li>工厂（Factory）：负责创建复杂对象</li>
+                <li>辅助类（Helper）：提供各种通用功能</li>
+            </ul>
+            <p>提供者最大的优势就是可以通过依赖注入（Dependency Injection）的方式被"送达"到需要它们的地方，这让代码变得更加模块化和可测试。</p>
+        </section>
+        
+        <section id="create-service" class="section">
+            <h2>创建你的一个服务 (Service)</h2>
+            <p>让我们通过一个管理猫咪信息的例子来了解如何创建服务。假设我们需要一个 CatsService 来处理所有关于猫咪的操作：</p>
+            <pre><code class="language-typescript">import { Injectable } from '@nestjs/common';
+import { Cat } from './interfaces/cat.interface';
 
-      <section>
-        <h2>创建你的一个服务 (Service)</h2>
-        <p>
-          让我们通过一个管理猫咪信息的例子来了解如何创建服务。假设我们需要一个
-          <code>CatsService</code> 来处理所有关于猫咪的操作：
-        </p>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { Cat } <span class="code-keyword">from</span> <span class="code-string">'./interfaces/cat.interface'</span>;
+@Injectable() // 这个装饰器是关键
+export class CatsService {
+  private readonly cats: Cat[] = []; // 用数组模拟数据库
 
-<span class="code-decorator">@Injectable()</span> <span class="code-comment">// 这个装饰器是关键</span>
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">CatsService</span> {
-  <span class="code-keyword">private</span> <span class="code-keyword">readonly</span> cats: Cat[] = []; <span class="code-comment">// 用数组模拟数据库</span>
-
-  <span class="code-function">create</span>(cat: Cat) {
-    <span class="code-keyword">this</span>.cats.<span class="code-function">push</span>(cat);
-    console.<span class="code-function">log</span>(<span class="code-string">'一只新猫咪加入了！现在有'</span>, <span class="code-keyword">this</span>.cats.length, <span class="code-string">'只猫咪。'</span>);
+  create(cat: Cat) {
+    this.cats.push(cat);
+    console.log('一只新猫咪加入了！现在有', this.cats.length, '只猫咪。');
   }
 
-  <span class="code-function">findAll</span>(): Cat[] {
-    console.<span class="code-function">log</span>(<span class="code-string">'正在查找所有猫咪...'</span>);
-    <span class="code-keyword">return</span> <span class="code-keyword">this</span>.cats;
-  }
-}</code></pre>
-        <p>
-          <code>@Injectable()</code> 装饰器相当于告诉 Nest：<code
-            >CatsService</code
-          >
-          这个类是个提供者，你可以管理它，也可以把它 ‘注入’ 给别人用。
-        </p>
-      </section>
-
-      <section>
-        <h2>在控制器中使用服务</h2>
-        <p>
-          现在我们有了
-          <code>CatsService</code>，接下来看看如何在控制器中使用它：
-        </p>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Controller, Get, Post, Body } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { CreateCatDto } <span class="code-keyword">from</span> <span class="code-string">'./dto/create-cat.dto'</span>;
-<span class="code-keyword">import</span> { CatsService } <span class="code-keyword">from</span> <span class="code-string">'./cats.service'</span>;
-<span class="code-keyword">import</span> { Cat } <span class="code-keyword">from</span> <span class="code-string">'./interfaces/cat.interface'</span>;
-
-<span class="code-decorator">@Controller</span>(<span class="code-string">'cats'</span>)
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">CatsController</span> {
-  <span class="code-comment">// 通过构造函数注入 CatsService</span>
-  <span class="code-keyword">constructor</span>(<span class="code-keyword">private</span> <span class="code-keyword">readonly</span> catsService: CatsService) {}
-
-  <span class="code-decorator">@Post()</span>
-  <span class="code-keyword">async</span> <span class="code-function">create</span>(<span class="code-decorator">@Body()</span> createCatDto: CreateCatDto) {
-    <span class="code-keyword">this</span>.catsService.<span class="code-function">create</span>(createCatDto);
-    <span class="code-keyword">return</span> <span class="code-string">'成功添加了一只猫咪！'</span>;
-  }
-
-  <span class="code-decorator">@Get()</span>
-  <span class="code-keyword">async</span> <span class="code-function">findAll</span>(): Promise&lt;Cat[]&gt; {
-    <span class="code-keyword">return</span> <span class="code-keyword">this</span>.catsService.<span class="code-function">findAll</span>();
+  findAll(): Cat[] {
+    console.log('正在查找所有猫咪...');
+    return this.cats;
   }
 }</code></pre>
-        <p>
-          这里的关键是构造函数中的
-          <code>constructor(private readonly catsService: CatsService)</code>。
-        </p>
-        <p>
-          你只需要声明需要什么类型的依赖，NestJS
-          就会自动创建实例并注入进来。这就是
-          <strong class="highlight">依赖注入的魔法</strong>。
-        </p>
-      </section>
+            <p><code>@Injectable()</code> 装饰器相当于告诉 Nest：CatsService 这个类是个提供者，你可以管理它，也可以把它'注入'给别人用。</p>
+        </section>
+        
+        <section id="use-service" class="section">
+            <h2>在控制器中使用服务</h2>
+            <p>现在我们有了 CatsService，接下来看看如何在控制器中使用它：</p>
+            <pre><code class="language-typescript">import { Controller, Get, Post, Body } from '@nestjs/common';
+import { CreateCatDto } from './dto/create-cat.dto';
+import { CatsService } from './cats.service';
+import { Cat } from './interfaces/cat.interface';
 
-      <section>
-        <h2>注册提供者</h2>
-        <p>
-          光定义服务还不够，你还需要告诉 Nest
-          这个服务的存在。这就需要在模块中注册它：
-        </p>
+@Controller('cats')
+export class CatsController {
+  // 通过构造函数注入 CatsService
+  constructor(private readonly catsService: CatsService) {}
 
-        <h3>1. 在特性模块中注册 (<code>cats.module.ts</code>)</h3>
-        <pre><code class="language-typescript"><span class="code-comment">// cats.module.ts</span>
-<span class="code-keyword">import</span> { Module } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { CatsController } <span class="code-keyword">from</span> <span class="code-string">'./cats.controller'</span>;
-<span class="code-keyword">import</span> { CatsService } <span class="code-keyword">from</span> <span class="code-string">'./cats.service'</span>;
+  @Post()
+  async create(@Body() createCatDto: CreateCatDto) {
+    this.catsService.create(createCatDto);
+    return '成功添加了一只猫咪！';
+  }
 
-<span class="code-decorator">@Module</span>({
+  @Get()
+  async findAll(): Promise<Cat[]> {
+    return this.catsService.findAll();
+  }
+}</code></pre>
+            <p>这里的关键是构造函数中的 <code>constructor(private readonly catsService: CatsService)</code>。
+            你只需要声明需要什么类型的依赖，NestJS 就会自动创建实例并注入进来。这就是依赖注入的魔法。</p>
+        </section>
+        
+        <section id="register-provider" class="section">
+            <h2>注册提供者</h2>
+            <p>光定义服务还不够，你还需要告诉 Nest 这个服务的存在。这就需要在模块中注册它：</p>
+            <pre><code class="language-typescript">// cats.module.ts
+import { Module } from '@nestjs/common';
+import { CatsController } from './cats.controller';
+import { CatsService } from './cats.service';
+
+@Module({
   controllers: [CatsController],
-  providers: [CatsService], <span class="code-comment">// 在这里注册服务</span>
-  exports: [CatsService],   <span class="code-comment">// 如果其他模块需要使用，记得导出</span>
+  providers: [CatsService], // 在这里注册服务
+  exports: [CatsService],   // 如果其他模块需要使用，记得导出
 })
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">CatsModule</span> {}</code></pre>
+export class CatsModule {}</code></pre>
+            <p>然后在主模块中导入这个特性模块：</p>
+            <pre><code class="language-typescript">// app.module.ts
+import { Module } from '@nestjs/common';
+import { CatsModule } from './cats/cats.module';
 
-        <h3>2. 在主模块中导入特性模块 (<code>app.module.ts</code>)</h3>
-        <pre><code class="language-typescript"><span class="code-comment">// app.module.ts</span>
-<span class="code-keyword">import</span> { Module } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { CatsModule } <span class="code-keyword">from</span> <span class="code-string">'./cats/cats.module'</span>;
-
-<span class="code-decorator">@Module</span>({
-  imports: [CatsModule], <span class="code-comment">// 导入特性模块</span>
+@Module({
+  imports: [CatsModule], // 导入特性模块
 })
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">AppModule</span> {}</code></pre>
-        <p>
-          当 Nest 初始化 <code>CatsController</code> 时，发现它需要
-          <code>CatsService</code
-          >，依赖注入系统就会自动找到已注册的提供者，实例化它并注入到控制器中。
-        </p>
-      </section>
+export class AppModule {}</code></pre>
+            <p>当 Nest 初始化 CatsController 时，发现它需要 CatsService，依赖注入系统就会自动找到已注册的提供者，实例化它并注入到控制器中。</p>
+        </section>
+        
+        <section id="async-provider" class="section">
+            <h2>异步提供者：处理复杂的初始化</h2>
+            <p>想象一下这样的场景：你的应用需要在启动时连接数据库，只有连接成功后，其他服务才能正常工作。如果用传统方式，你可能需要写一堆回调或者 Promise 链，代码会变得复杂且难以维护。</p>
+            <p>异步提供者的解决方案非常直观，它使用 async/await 配合 useFactory：</p>
+            <pre><code class="language-typescript">import { DataSource } from 'typeorm';
 
-      <section>
-        <h2>异步提供者：处理复杂的初始化</h2>
-        <p>
-          想象一下这样的场景：你的应用需要在启动时连接数据库，只有连接成功后，其他服务才能正常工作。如果用传统方式，你可能需要写一堆回调或者
-          Promise 链，代码会变得复杂且难以维护。
-        </p>
-        <p>
-          异步提供者的解决方案非常直观，它使用 <code>async/await</code> 配合
-          <code>useFactory</code>：
-        </p>
-
-        <h3>1. 使用 <code>useFactory</code> 创建异步提供者</h3>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { DataSource } <span class="code-keyword">from</span> <span class="code-string">'typeorm'</span>;
-
-<span class="code-comment">// 在模块的 providers 中配置</span>
+// 在模块的 providers 中配置
 {
-  provide: <span class="code-string">'DATABASE_CONNECTION'</span>, <span class="code-comment">// 提供者的 Token</span>
-  useFactory: <span class="code-keyword">async</span> (): Promise&lt;DataSource&gt; => {
-    <span class="code-keyword">const</span> dataSource = <span class="code-keyword">new</span> <span class="code-class">DataSource</span>({
-      type: <span class="code-string">'postgres'</span>,
-      host: <span class="code-string">'localhost'</span>,
-      port: <span class="code-number">5432</span>,
-      database: <span class="code-string">'myapp'</span>,
-      <span class="code-comment">// 其他配置...</span>
+  provide: 'DATABASE_CONNECTION',
+  useFactory: async (): Promise<DataSource> => {
+    const dataSource = new DataSource({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      database: 'myapp',
+      // 其他配置...
     });
-
-    <span class="code-keyword">await</span> dataSource.<span class="code-function">initialize</span>();
-    console.<span class="code-function">log</span>(<span class="code-string">'数据库连接建立成功！'</span>);
-    <span class="code-keyword">return</span> dataSource;
+    
+    await dataSource.initialize();
+    console.log('数据库连接建立成功！');
+    return dataSource;
   },
 }</code></pre>
-        <p>
-          Nest 会智能地检测到你的
-          <code>useFactory</code> 函数是异步的，然后耐心等待 Promise
-          完成。只有当数据库连接真正建立后，那些依赖这个连接的服务才会开始实例化。
-        </p>
+            <p>Nest 会智能地检测到你的 useFactory 函数是异步的，然后耐心等待 Promise 完成。只有当数据库连接真正建立后，那些依赖这个连接的服务才会开始实例化。</p>
+            <p>在服务中注入使用：</p>
+            <pre><code class="language-typescript">import { Injectable, Inject } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
-        <h3>2. 在服务中注入异步提供者</h3>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable, Inject } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { DataSource } <span class="code-keyword">from</span> <span class="code-string">'typeorm'</span>;
-<span class="code-keyword">import</span> { User } <span class="code-keyword">from</span> <span class="code-string">'./entities/user.entity'</span>; <span class="code-comment">// 假设有 User 实体</span>
-<span class="code-keyword">import</span> { CreateUserDto } <span class="code-keyword">from</span> <span class="code-string">'./dto/create-user.dto'</span>; <span class="code-comment">// 假设有 DTO</span>
-
-<span class="code-decorator">@Injectable()</span>
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">UserService</span> {
-  <span class="code-keyword">constructor</span>(
-    <span class="code-decorator">@Inject</span>(<span class="code-string">'DATABASE_CONNECTION'</span>) <span class="code-comment">// 使用 Token 注入</span>
-    <span class="code-keyword">private</span> <span class="code-keyword">readonly</span> dataSource: DataSource
+@Injectable()
+export class UserService {
+  constructor(
+    @Inject('DATABASE_CONNECTION') 
+    private readonly dataSource: DataSource
   ) {}
 
-  <span class="code-keyword">async</span> <span class="code-function">findAllUsers</span>() {
-    <span class="code-keyword">const</span> userRepository = <span class="code-keyword">this</span>.dataSource.<span class="code-function">getRepository</span>(User);
-    <span class="code-keyword">return</span> <span class="code-keyword">await</span> userRepository.<span class="code-function">find</span>();
+  async findAllUsers() {
+    const userRepository = this.dataSource.getRepository(User);
+    return await userRepository.find();
   }
 
-  <span class="code-keyword">async</span> <span class="code-function">createUser</span>(userData: CreateUserDto) {
-    <span class="code-keyword">const</span> userRepository = <span class="code-keyword">this</span>.dataSource.<span class="code-function">getRepository</span>(User);
-    <span class="code-keyword">const</span> user = userRepository.<span class="code-function">create</span>(userData);
-    <span class="code-keyword">return</span> <span class="code-keyword">await</span> userRepository.<span class="code-function">save</span>(user);
+  async createUser(userData: CreateUserDto) {
+    const userRepository = this.dataSource.getRepository(User);
+    const user = userRepository.create(userData);
+    return await userRepository.save(user);
   }
 }</code></pre>
+            <p>如果你的工厂函数还需要其他依赖，可以通过 inject 参数注入：</p>
+            <pre><code class="language-typescript">import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-        <h3>3. 为异步工厂注入依赖</h3>
-        <p>
-          如果你的工厂函数还需要其他依赖（例如配置服务），可以通过
-          <code>inject</code> 参数注入：
-        </p>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Module } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { ConfigModule, ConfigService } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/config'</span>;
-<span class="code-keyword">import</span> { DataSource } <span class="code-keyword">from</span> <span class="code-string">'typeorm'</span>;
-<span class="code-keyword">import</span> { UserService } <span class="code-keyword">from</span> <span class="code-string">'./user.service'</span>; <span class="code-comment">// 假设 UserService 在这里定义或导入</span>
-
-<span class="code-decorator">@Module</span>({
-  imports: [ConfigModule.<span class="code-function">forRoot</span>()], <span class="code-comment">// 确保 ConfigModule 已配置</span>
+@Module({
+  imports: [ConfigModule],
   providers: [
     {
-      provide: <span class="code-string">'DATABASE_CONNECTION'</span>,
-      useFactory: <span class="code-keyword">async</span> (configService: ConfigService): Promise&lt;DataSource&gt; => {
-        <span class="code-keyword">const</span> dbHost = configService.<span class="code-function">get</span>&lt;string&gt;(<span class="code-string">'DATABASE_HOST'</span>);
-        <span class="code-keyword">const</span> dbPort = configService.<span class="code-function">get</span>&lt;number&gt;(<span class="code-string">'DATABASE_PORT'</span>);
-        <span class="code-comment">// ... 使用配置服务获取其他数据库连接信息</span>
-        <span class="code-keyword">const</span> dataSource = <span class="code-keyword">new</span> <span class="code-class">DataSource</span>({
-          type: <span class="code-string">'postgres'</span>,
-          host: dbHost,
-          port: dbPort,
-          <span class="code-comment">// ... 其他配置</span>
-        });
-        <span class="code-keyword">await</span> dataSource.<span class="code-function">initialize</span>();
-        console.<span class="code-function">log</span>(<span class="code-string">'数据库连接成功 (使用配置)!'</span>);
-        <span class="code-keyword">return</span> dataSource;
+      provide: 'DATABASE_CONNECTION',
+      useFactory: async (configService: ConfigService) => {
+        // 异步初始化逻辑
       },
-      inject: [ConfigService], <span class="code-comment">// 注入 ConfigService 到 useFactory</span>
+      inject: [ConfigService],
     },
-    UserService, <span class="code-comment">// 注册需要数据库连接的服务</span>
+    UserService,
   ],
-  exports: [<span class="code-string">'DATABASE_CONNECTION'</span>], <span class="code-comment">// 导出连接，供其他模块使用</span>
+  exports: ['DATABASE_CONNECTION'],
 })
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">DatabaseModule</span> {}</code></pre>
-      </section>
+export class DatabaseModule {}</code></pre>
+        </section>
+        
+        <section id="advanced" class="section">
+            <h2>提供者的一些进阶玩法</h2>
+            
+            <section id="scope" class="section">
+                <h3>作用域</h3>
+                <p>NestJS 中的提供者默认采用单例模式（整个应用共享一个实例），但可以根据业务需求调整作用域。</p>
+                
+                <h4>1. DEFAULT（默认单例）</h4>
+                <pre><code class="language-typescript">import { Injectable } from '@nestjs/common';
 
-      <section>
-        <h2>提供者的一些进阶玩法</h2>
-
-        <h3>作用域 (Scope)</h3>
-        <p>
-          NestJS 中的提供者默认采用
-          <strong class="highlight">单例模式</strong
-          >（整个应用共享一个实例），但可以根据业务需求调整作用域。
-        </p>
-
-        <h4>1. DEFAULT (默认单例)</h4>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-
-<span class="code-decorator">@Injectable()</span> <span class="code-comment">// 等同于 @Injectable({ scope: Scope.DEFAULT })</span>
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">UserService</span> {
-  <span class="code-keyword">private</span> users: User[] = []; <span class="code-comment">// 假设 User 类型已定义</span>
-
-  <span class="code-comment">// 整个应用生命周期内只有一个实例</span>
-  <span class="code-comment">// 所有模块共享同一个实例</span>
-  <span class="code-keyword">constructor</span>() {
-    console.<span class="code-function">log</span>(<span class="code-string">'UserService (Singleton) 实例创建'</span>);
+@Injectable() // 等同于 @Injectable({ scope: Scope.DEFAULT })
+export class UserService {
+  private users: User[] = [];
+  
+  // 整个应用生命周期内只有一个实例
+  // 所有模块共享同一个实例
+  constructor() {
+    console.log('UserService 实例创建');
   }
 }</code></pre>
+                
+                <h4>2. REQUEST（请求作用域）</h4>
+                <pre><code class="language-typescript">import { Injectable, Scope } from '@nestjs/common';
 
-        <h4>2. REQUEST (请求作用域)</h4>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable, Scope, Inject } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { REQUEST } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/core'</span>;
-<span class="code-keyword">import</span> { Request } <span class="code-keyword">from</span> <span class="code-string">'express'</span>; <span class="code-comment">// 假设使用 Express</span>
-
-<span class="code-decorator">@Injectable</span>({ scope: Scope.REQUEST })
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">RequestScopedService</span> {
-  <span class="code-keyword">private</span> requestData: any = {};
-
-  <span class="code-comment">// 每个 HTTP 请求创建新实例</span>
-  <span class="code-comment">// 适合存储请求特有的信息（如用户信息、请求ID等）</span>
-  <span class="code-keyword">constructor</span>(<span class="code-decorator">@Inject</span>(REQUEST) <span class="code-keyword">private</span> request: Request) {
-    console.<span class="code-function">log</span>(<span class="code-string">'RequestScopedService 实例创建 for request:'</span>, <span class="code-keyword">this</span>.request.id);
-    <span class="code-comment">// 可以访问注入的 request 对象</span>
+@Injectable({ scope: Scope.REQUEST })
+export class RequestScopedService {
+  private requestData: any = {};
+  
+  // 每个 HTTP 请求创建新实例
+  // 适合存储请求特有的信息（如用户信息、请求ID等）
+  constructor() {
+    console.log('RequestScopedService 实例创建');
   }
 }</code></pre>
-        <p>
-          <strong class="highlight">注意：</strong>
-          请求作用域的提供者会带来一定的性能开销，因为每个请求都需要创建实例。只有在确实需要按请求隔离状态时才使用。
-        </p>
+                
+                <h4>3. TRANSIENT（瞬态作用域）</h4>
+                <pre><code class="language-typescript">import { Injectable, Scope } from '@nestjs/common';
 
-        <h4>3. TRANSIENT (瞬态作用域)</h4>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable, Scope } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-
-<span class="code-decorator">@Injectable</span>({ scope: Scope.TRANSIENT })
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">TransientService</span> {
-  <span class="code-keyword">private</span> instanceId = Math.<span class="code-function">random</span>().<span class="code-function">toString</span>(<span class="code-number">36</span>).<span class="code-function">substring</span>(<span class="code-number">7</span>);
-
-  <span class="code-comment">// 每次注入都创建新实例</span>
-  <span class="code-comment">// 完全独立的状态管理</span>
-  <span class="code-keyword">constructor</span>() {
-    console.<span class="code-function">log</span>(<span class="code-string">`TransientService 实例创建，ID: </span><span class="code-interpolation">${<span class="code-keyword">this</span>.instanceId}</span><span class="code-string">`</span>);
+@Injectable({ scope: Scope.TRANSIENT })
+export class TransientService {
+  private instanceId = Math.random();
+  
+  // 每次注入都创建新实例
+  // 完全独立的状态管理
+  constructor() {
+    console.log(`TransientService 实例创建，ID: ${this.instanceId}`);
   }
 }</code></pre>
-        <p>
-          <strong class="highlight">注意：</strong>
-          瞬态提供者每次被注入时都会创建一个新的、独享的实例。如果 A 依赖 B，B
-          依赖 C (Transient)，那么 A 和 B 会共享同一个 C 实例。但如果 A 和 D
-          都依赖 C (Transient)，则 A 和 D 会分别获得不同的 C 实例。
-        </p>
+                
+                <h4>使用场景对比</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>作用域</th>
+                            <th>性能</th>
+                            <th>内存占用</th>
+                            <th>适用场景</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>DEFAULT</td>
+                            <td>最优</td>
+                            <td>最低</td>
+                            <td>无状态服务、工具类、数据库连接</td>
+                        </tr>
+                        <tr>
+                            <td>REQUEST</td>
+                            <td>中等</td>
+                            <td>中等</td>
+                            <td>用户认证、请求日志、请求上下文</td>
+                        </tr>
+                        <tr>
+                            <td>TRANSIENT</td>
+                            <td>较差</td>
+                            <td>较高</td>
+                            <td>需要完全隔离状态的特殊场景</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <section id="optional" class="section">
+                <h3>可选依赖</h3>
+                <p>有时某些依赖不是必需的，可以使用 <code>@Optional()</code> 装饰器：</p>
+                <pre><code class="language-typescript">import { Injectable, Optional } from '@nestjs/common';
 
-        <h4>使用场景对比</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>作用域</th>
-              <th>性能</th>
-              <th>内存占用</th>
-              <th>适用场景</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>DEFAULT</code> (单例)</td>
-              <td>最优</td>
-              <td>最低</td>
-              <td>无状态服务、工具类、数据库连接池、配置服务等共享资源</td>
-            </tr>
-            <tr>
-              <td><code>REQUEST</code> (请求)</td>
-              <td>中等 (有开销)</td>
-              <td>中等 (随请求数增加)</td>
-              <td>
-                需要基于每个请求存储上下文信息，如用户认证数据、请求追踪
-                ID、请求级缓存
-              </td>
-            </tr>
-            <tr>
-              <td><code>TRANSIENT</code> (瞬态)</td>
-              <td>较差 (频繁创建)</td>
-              <td>较高 (实例多)</td>
-              <td>需要为每个注入点提供完全隔离状态的特殊场景，不常用</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>可选依赖</h3>
-        <p>
-          有时某些依赖不是必需的，可以使用 <code>@Optional()</code> 装饰器。如果
-          Nest 无法解析该依赖（例如，提供者未注册），它将注入
-          <code>undefined</code> 而不是抛出错误。
-        </p>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable, Optional, Inject } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-
-<span class="code-comment">// 假设有一个 AnalyticsService，但它可能没有在所有环境中都注册</span>
-<span class="code-comment">// @Injectable()</span>
-<span class="code-comment">// export class AnalyticsService {</span>
-<span class="code-comment">//   track(event: string) { console.log(`Tracking event: ${event}`); }</span>
-<span class="code-comment">// }</span>
-
-<span class="code-decorator">@Injectable()</span>
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">AppService</span> {
-  <span class="code-keyword">constructor</span>(
-    <span class="code-decorator">@Optional()</span> <span class="code-comment">// 标记为可选依赖</span>
-    <span class="code-comment">// @Inject('ANALYTICS_SERVICE_TOKEN') // 如果使用 token，也需要 @Optional</span>
-    <span class="code-keyword">private</span> <span class="code-keyword">readonly</span> analyticsService?: AnalyticsService <span class="code-comment">// 类型设为可选</span>
+@Injectable()
+export class AppService {
+  constructor(
+    @Optional() private readonly analyticsService?: AnalyticsService
   ) {
-    <span class="code-comment">// analyticsService 可能为 undefined</span>
-    <span class="code-keyword">if</span> (<span class="code-keyword">this</span>.analyticsService) {
-      <span class="code-keyword">this</span>.analyticsService.<span class="code-function">track</span>(<span class="code-string">'AppService initialized'</span>);
-      console.<span class="code-function">log</span>(<span class="code-string">'AnalyticsService is available.'</span>);
-    } <span class="code-keyword">else</span> {
-      console.<span class="code-function">log</span>(<span class="code-string">'AnalyticsService is not available, proceeding without it.'</span>);
+    // analyticsService 可能为 undefined
+    if (this.analyticsService) {
+      this.analyticsService.track('AppService initialized');
     }
   }
-
-  <span class="code-function">doSomething</span>() {
-    <span class="code-comment">// 使用前需要检查是否存在 (使用可选链 ?. 更简洁)</span>
-    <span class="code-keyword">this</span>.analyticsService?.<span class="code-function">track</span>(<span class="code-string">'Action performed'</span>);
-    console.<span class="code-function">log</span>(<span class="code-string">'Doing something...'</span>);
+  
+  doSomething() {
+    // 使用前需要检查是否存在
+    this.analyticsService?.track('Action performed');
   }
 }</code></pre>
-        <p>这在开发插件系统或可选功能时特别有用。</p>
+                <p>这在开发插件系统或可选功能时特别有用。</p>
+            </section>
+            
+            <section id="property-injection" class="section">
+                <h3>属性注入</h3>
+                <p>除了构造函数注入，Nest 也支持属性注入：</p>
+                <pre><code class="language-typescript">import { Injectable, Inject } from '@nestjs/common';
 
-        <h3>属性注入</h3>
-        <p>
-          除了构造函数注入，Nest 也支持属性注入（Property-based
-          Injection）。这通常通过 <code>@Inject()</code> 装饰器实现：
-        </p>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable, Inject } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { ConfigService } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/config'</span>; <span class="code-comment">// 假设 ConfigService 已注册</span>
-
-<span class="code-decorator">@Injectable()</span>
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">CatsService</span> {
-  <span class="code-comment">// 使用 @Inject() 进行属性注入</span>
-  <span class="code-decorator">@Inject</span>(ConfigService) <span class="code-comment">// 或者 @Inject('CONFIG_SERVICE_TOKEN') 如果使用 token</span>
-  <span class="code-keyword">private</span> <span class="code-keyword">readonly</span> configService: ConfigService;
-
-  <span class="code-comment">// 注意：属性注入的依赖在构造函数执行时可能还未被注入！</span>
-  <span class="code-comment">// 因此，不建议在构造函数中直接使用这些属性。</span>
-  <span class="code-keyword">constructor</span>() {
-    <span class="code-comment">// console.log(this.configService.get('some_key')); // 可能出错！</span>
-  }
-
-  <span class="code-comment">// 在方法中使用是安全的，因为此时注入已完成</span>
-  <span class="code-function">getSettings</span>() {
-    <span class="code-comment">// 确保 configService 已经被注入</span>
-    <span class="code-keyword">if</span> (!<span class="code-keyword">this</span>.configService) {
-        <span class="code-keyword">throw</span> <span class="code-keyword">new</span> <span class="code-class">Error</span>(<span class="code-string">'ConfigService not injected'</span>);
-    }
-    <span class="code-keyword">return</span> <span class="code-keyword">this</span>.configService.<span class="code-function">get</span>(<span class="code-string">'cats'</span>); <span class="code-comment">// 假设配置中有 'cats' 键</span>
+@Injectable()
+export class CatsService {
+  @Inject(ConfigService)
+  private readonly configService: ConfigService;
+  
+  getSettings() {
+    return this.configService.get('cats');
   }
 }</code></pre>
-        <p>
-          不过，<strong class="highlight">通常还是推荐用构造函数注入</strong
-          >，因为它有几个优点：
-        </p>
-        <ul>
-          <li>依赖关系更清晰，类的所有依赖都在构造函数签名中明确列出。</li>
-          <li>更便于单元测试，可以直接在测试中模拟和传入依赖。</li>
-          <li>确保依赖在类的实例方法被调用之前就已经可用。</li>
-          <li>属性可以声明为 <code>readonly</code>，增强不变性。</li>
-        </ul>
+                <p>不过，通常还是推荐用构造函数注入，因为依赖关系更清晰，也更便于测试。</p>
+            </section>
+            
+            <section id="manual-instance" class="section">
+                <h3>手动获取实例</h3>
+                <p>有时需要在运行时动态获取提供者实例，可以使用 ModuleRef：</p>
+                <pre><code class="language-typescript">import { Injectable, ModuleRef } from '@nestjs/core';
+import { UserService } from '../user/user.service';
+import { LoggerService } from '../logger/logger.service';
 
-        <h3>手动获取实例</h3>
-        <p>
-          有时你可能需要在运行时动态地、程序化地获取提供者的实例，而不是通过构造函数或属性注入。这可以通过注入
-          Nest 核心的 <code>ModuleRef</code> 类来实现。
-        </p>
-        <pre><code class="language-typescript"><span class="code-keyword">import</span> { Injectable, Inject } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/common'</span>;
-<span class="code-keyword">import</span> { ModuleRef, REQUEST } <span class="code-keyword">from</span> <span class="code-string">'@nestjs/core'</span>;
-<span class="code-keyword">import</span> { UserService } <span class="code-keyword">from</span> <span class="code-string">'../user/user.service'</span>; <span class="code-comment">// 假设 UserService 是单例</span>
-<span class="code-keyword">import</span> { LoggerService } <span class="code-keyword">from</span> <span class="code-string">'../logger/logger.service'</span>; <span class="code-comment">// 假设 LoggerService 是请求作用域</span>
+@Injectable()
+export class DynamicService {
+  constructor(private moduleRef: ModuleRef) {}
 
-<span class="code-decorator">@Injectable</span>()
-<span class="code-keyword">export</span> <span class="code-keyword">class</span> <span class="code-class">DynamicService</span> {
-  <span class="code-keyword">constructor</span>(<span class="code-keyword">private</span> moduleRef: ModuleRef) {}
-
-  <span class="code-keyword">async</span> <span class="code-function">getUserData</span>(userId: string) {
-    <span class="code-comment">// 1. 获取单例或瞬态提供者: 使用 moduleRef.get()</span>
-    <span class="code-comment">// 它会从容器中检索现有实例（如果是单例），或创建新实例（瞬态）</span>
-    <span class="code-keyword">const</span> userService = <span class="code-keyword">this</span>.moduleRef.<span class="code-function">get</span>(UserService, { strict: <span class="code-keyword">false</span> });
-    <span class="code-comment">// { strict: false } 允许在非当前模块的上下文中查找提供者</span>
-
-    <span class="code-comment">// 2. 获取请求作用域的提供者: 使用 moduleRef.resolve()</span>
-    <span class="code-comment">// resolve() 用于解析请求作用域或瞬态提供者，并会考虑当前的注入上下文。</span>
-    <span class="code-comment">// 对于请求作用域的提供者，它会返回与当前请求关联的实例。</span>
-    <span class="code-comment">// 注意：resolve 返回 Promise，因为它可能需要异步解析上下文。</span>
-    <span class="code-keyword">const</span> logger = <span class="code-keyword">await</span> <span class="code-keyword">this</span>.moduleRef.<span class="code-function">resolve</span>(LoggerService); <span class="code-comment">// 需要 await</span>
-    <span class="code-comment">// 如果 DynamicService 本身是请求作用域的，则 resolve 会使用相同的请求上下文</span>
-
-    logger.<span class="code-function">log</span>(<span class="code-string">`Getting user data for </span><span class="code-interpolation">${userId}</span><span class="code-string">`</span>);
-    <span class="code-keyword">return</span> userService.<span class="code-function">findById</span>(userId); <span class="code-comment">// 调用获取到的服务的方法</span>
+  async getUserData(userId: string) {
+    // 动态获取用户服务
+    const userService = this.moduleRef.get(UserService);
+    
+    // 获取请求范围的日志服务（每次请求都是新实例）
+    const logger = await this.moduleRef.resolve(LoggerService);
+    
+    logger.log(`Getting user data for ${userId}`);
+    return userService.findById(userId);
   }
 
-  <span class="code-keyword">async</span> <span class="code-function">getServiceByName</span>(serviceName: string) {
-    <span class="code-keyword">try</span> {
-      <span class="code-comment">// 也可以根据字符串 token 动态获取服务</span>
-      <span class="code-comment">// 同样，使用 get() 获取单例/瞬态，resolve() 获取请求作用域/瞬态</span>
-      <span class="code-keyword">const</span> service = <span class="code-keyword">this</span>.moduleRef.<span class="code-function">get</span>(serviceName, { strict: <span class="code-keyword">false</span> });
-      console.<span class="code-function">log</span>(<span class="code-string">`Successfully retrieved service: </span><span class="code-interpolation">${serviceName}</span><span class="code-string">`</span>);
-      <span class="code-keyword">return</span> service;
-    } <span class="code-keyword">catch</span> (error) {
-      console.<span class="code-function">error</span>(<span class="code-string">`Service '</span><span class="code-interpolation">${serviceName}</span><span class="code-string">' not found or could not be retrieved.`</span>, error);
-      <span class="code-keyword">return</span> <span class="code-keyword">null</span>;
+  async getServiceByName(serviceName: string) {
+    try {
+      // 根据字符串 token 动态获取服务
+      const service = this.moduleRef.get(serviceName, { strict: false });
+      return service;
+    } catch (error) {
+      console.log(`Service ${serviceName} not found`);
+      return null;
     }
   }
 }</code></pre>
-        <p>
-          <code>moduleRef.get()</code
-          >：用于检索当前注入上下文中的提供者实例（主要是单例和瞬态）。
-        </p>
-        <p>
-          <code>moduleRef.resolve()</code>：用于动态解析提供者实例，特别是对于
-          <strong class="highlight">请求作用域</strong> 的提供者。它会返回一个
-          Promise，解析为该提供者在当前请求上下文中的实例。
-        </p>
-        <p>
-          使用
-          <code>ModuleRef</code>
-          提供了更大的灵活性，但也使得依赖关系变得不那么明确，应谨慎使用。
-        </p>
+            </section>
+            
+            <section id="custom-provider" class="section">
+                <h3>自定义提供者</h3>
+                <p>到目前为止，我们看到的提供者都是基于类的。但 Nest 的依赖注入系统非常灵活，它不仅支持提供类作为 Provider，还可以提供：</p>
+                <ul>
+                    <li>普通值 (Value Providers)： 使用 useValue 提供常量、配置对象等。</li>
+                    <li>类 (Class Providers)： 使用 useClass 提供一个类的实例（我们之前看到的默认方式）。</li>
+                    <li>工厂函数 (Factory Providers)： 使用 useFactory 根据动态逻辑（可以是同步或异步）创建和提供实例（如之前的数据库连接示例）。</li>
+                    <li>别名 (Alias Providers)： 使用 useExisting 为已存在的提供者创建一个别名或不同的 token。</li>
+                </ul>
+                <p>这种灵活性使得你可以用非常精细的方式来管理和提供应用程序中的各种依赖。我们后面会单独介绍下各种自定义提供者的具体使用方式和场景。</p>
+            </section>
+        </section>
+    </main>
 
-        <h3>自定义提供者</h3>
-        <p>
-          到目前为止，我们看到的提供者都是基于类的。但 Nest
-          的依赖注入系统非常灵活，它不仅支持提供类作为 Provider，还可以提供：
-        </p>
-        <ul>
-          <li>
-            <strong>普通值 (Value Providers)：</strong> 使用
-            <code>useValue</code> 提供常量、配置对象等。
-          </li>
-          <li>
-            <strong>类 (Class Providers)：</strong> 使用
-            <code>useClass</code> 提供一个类的实例（我们之前看到的默认方式）。
-          </li>
-          <li>
-            <strong>工厂函数 (Factory Providers)：</strong> 使用
-            <code>useFactory</code>
-            根据动态逻辑（可以是同步或异步）创建和提供实例（如之前的数据库连接示例）。
-          </li>
-          <li>
-            <strong>别名 (Alias Providers)：</strong> 使用
-            <code>useExisting</code> 为已存在的提供者创建一个别名或不同的
-            token。
-          </li>
-        </ul>
-        <p>
-          这种灵活性使得你可以用非常精细的方式来管理和提供应用程序中的各种依赖。我们后面会单独介绍下各种自定义提供者的具体使用方式和场景。
-        </p>
-      </section>
-    </div>
-    <span class="code-comment"><!-- /.container --></span>
-
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const tocContainer = document.querySelector('#tableOfContents ul');
-        const headers = document.querySelectorAll(
-          '.container h2, .container h3',
-        );
-        let h2List = null;
-
-        headers.forEach((header, index) => {
-          const id = 'section-' + index;
-          header.id = id;
-
-          const listItem = document.createElement('li');
-          const link = document.createElement('a');
-          link.href = '#' + id;
-          link.textContent = header.textContent;
-
-          if (header.tagName === 'H2') {
-            listItem.appendChild(link);
-            tocContainer.appendChild(listItem);
-            h2List = document.createElement('ul'); // Create a new sublist for H3s under this H2
-            listItem.appendChild(h2List);
-          } else if (header.tagName === 'H3' && h2List) {
-            // Only add H3 if it's under an H2's context
-            const subListItem = document.createElement('li');
-            subListItem.appendChild(link);
-            h2List.appendChild(subListItem);
-          }
-        });
-
-        // Optional: Smooth scrolling
-        tocContainer.addEventListener('click', function (event) {
-          if (event.target.tagName === 'A') {
-            event.preventDefault();
-            const targetId = event.target.getAttribute('href');
-            document.querySelector(targetId).scrollIntoView({
-              behavior: 'smooth',
+        document.addEventListener('DOMContentLoaded', () => {
+            // 处理目录点击事件
+            const menuItems = document.querySelectorAll('.sidebar a');
+            menuItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const parent = item.parentElement;
+                    if (parent.querySelector('.sub-menu')) {
+                        parent.classList.toggle('active');
+                    }
+                });
             });
-          }
-        });
 
-        // Optional: Active link highlighting on scroll
-        const links = tocContainer.querySelectorAll('a');
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              const id = entry.target.getAttribute('id');
-              const correspondingLink = tocContainer.querySelector(
-                `a[href="#${id}"]`,
-              );
-              if (entry.isIntersecting) {
-                links.forEach((l) => l.classList.remove('active'));
-                if (correspondingLink) {
-                  correspondingLink.classList.add('active');
-                  // Expand parent H2 if an H3 is active
-                  let parentLi = correspondingLink.closest('ul').closest('li');
-                  if (parentLi && parentLi.querySelector('a')) {
-                    parentLi.querySelector('a').classList.add('active');
-                  }
-                }
-              } else {
-                if (correspondingLink) {
-                  // correspondingLink.classList.remove('active'); // Optional: remove active only when another becomes active
-                }
-              }
+            // 根据滚动位置高亮当前目录项
+            const sections = document.querySelectorAll('.section');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                menuItems.forEach(item => {
+                    item.parentElement.classList.remove('active');
+                    if (item.getAttribute('href') === `#${current}`) {
+                        item.parentElement.classList.add('active');
+                        
+                        // 如果是子菜单项，也激活父菜单
+                        const parentLi = item.closest('.sub-menu')?.parentElement;
+                        if (parentLi) {
+                            parentLi.classList.add('active');
+                        }
+                    }
+                });
             });
-          },
-          { rootMargin: '-50% 0px -50% 0px' },
-        ); // Adjust rootMargin to trigger when element is in middle of viewport
-
-        headers.forEach((header) => {
-          observer.observe(header);
         });
-      });
     </script>
-  </body>
+</body>
 </html>

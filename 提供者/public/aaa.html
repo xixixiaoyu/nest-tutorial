@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NestJS 模块系统详解</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f8f9fa;
+      }
+
+      .container {
+        display: flex;
+        max-width: 1400px;
+        margin: 0 auto;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 280px;
+        background: #fff;
+        border-right: 1px solid #e9ecef;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar h3 {
+        color: #e74c3c;
+        margin-bottom: 20px;
+        font-size: 18px;
+        border-bottom: 2px solid #e74c3c;
+        padding-bottom: 10px;
+      }
+
+      .toc {
+        list-style: none;
+      }
+
+      .toc li {
+        margin-bottom: 8px;
+      }
+
+      .toc a {
+        color: #495057;
+        text-decoration: none;
+        padding: 8px 12px;
+        display: block;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+      }
+
+      .toc a:hover {
+        background-color: #f8f9fa;
+        color: #e74c3c;
+        transform: translateX(5px);
+      }
+
+      .toc .level-2 {
+        margin-left: 20px;
+        font-size: 13px;
+      }
+
+      .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 40px;
+        background: #fff;
+        margin-right: 20px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 3px solid #e74c3c;
+      }
+
+      .header h1 {
+        color: #2c3e50;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        color: #7f8c8d;
+        font-size: 1.1em;
+      }
+
+      .section {
+        margin-bottom: 40px;
+        scroll-margin-top: 20px;
+      }
+
+      .section h2 {
+        color: #e74c3c;
+        font-size: 1.8em;
+        margin-bottom: 20px;
+        padding-left: 15px;
+        border-left: 4px solid #e74c3c;
+      }
+
+      .section h3 {
+        color: #34495e;
+        font-size: 1.4em;
+        margin: 25px 0 15px 0;
+      }
+
+      .section p {
+        margin-bottom: 15px;
+        text-align: justify;
+        line-height: 1.8;
+      }
+
+      .highlight-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .highlight-box h3 {
+        color: white;
+        margin-top: 0;
+      }
+
+      .code-block {
+        margin: 20px 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .code-header {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      pre {
+        margin: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      pre code {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .file-structure {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .file-structure .folder {
+        color: #3498db;
+        font-weight: bold;
+      }
+
+      .file-structure .file {
+        color: #2ecc71;
+      }
+
+      .warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-left: 4px solid #f39c12;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+
+      .warning strong {
+        color: #e67e22;
+      }
+
+      .tip {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-left: 4px solid #17a2b8;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+
+      .tip strong {
+        color: #138496;
+      }
+
+      ol,
+      ul {
+        margin: 15px 0;
+        padding-left: 30px;
+      }
+
+      li {
+        margin-bottom: 8px;
+      }
+
+      .emoji {
+        font-size: 1.2em;
+        margin-right: 8px;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          position: relative;
+          width: 100%;
+          height: auto;
+        }
+
+        .main-content {
+          margin-left: 0;
+          margin: 10px;
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="sidebar">
+        <h3>📚 目录导航</h3>
+        <ul class="toc">
+          <li><a href="#what-is-module">模块是什么？</a></li>
+          <li><a href="#module-decorator">@Module() 装饰器的核心配置</a></li>
+          <li><a href="#create-feature-module">🌰 创建功能模块</a></li>
+          <li><a href="#module-sharing">模块间的共享：exports</a></li>
+          <li><a href="#module-reexport">模块重新导出</a></li>
+          <li><a href="#module-di">模块的依赖注入</a></li>
+          <li><a href="#global-module">全局模块</a></li>
+          <li>
+            <a href="#dynamic-module">动态模块</a>
+            <ul>
+              <li>
+                <a href="#dynamic-usage" class="level-2">动态模块的使用</a>
+              </li>
+              <li>
+                <a href="#dynamic-reexport" class="level-2"
+                  >动态模块的重新导出</a
+                >
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <main class="main-content">
+        <div class="header">
+          <h1>NestJS 模块系统详解</h1>
+          <p>深入理解 NestJS 中模块的概念、配置和高级用法</p>
+        </div>
+
+        <section id="what-is-module" class="section">
+          <h2>模块是什么？</h2>
+          <p>
+            模块就是一个用 <code>@Module()</code> 装饰器标记的 TypeScript
+            类。这个装饰器不仅仅是个标记，它还提供了丰富的元数据，帮助 Nest
+            框架理解应用的整体结构，并高效地管理各个组件之间的关系。
+          </p>
+
+          <p>
+            每个 Nest 应用都有一个根模块（通常叫
+            AppModule），它是整个应用的入口点。框架会从这里开始构建整个应用的依赖关系图。
+          </p>
+
+          <p>
+            虽然小项目可能只需要一个根模块就够了，但在实际开发中，我们通常会按照功能划分创建多个模块，每个模块负责一块相对独立的业务逻辑。
+          </p>
+        </section>
+
+        <section id="module-decorator" class="section">
+          <h2>@Module() 装饰器的核心配置</h2>
+          <p>
+            <code>@Module()</code> 装饰器接受一个配置对象，包含四个关键属性：
+          </p>
+
+          <ol>
+            <li>
+              <strong>providers</strong>:
+              存放服务和其他可注入的对象，它们可以在模块内部使用
+            </li>
+            <li>
+              <strong>controllers</strong>: 列出当前模块需要实例化的控制器
+            </li>
+            <li>
+              <strong>imports</strong>: 导入其他模块，使用它们导出的 providers
+            </li>
+            <li>
+              <strong>exports</strong>: 导出本模块的
+              providers，让其他模块可以使用
+            </li>
+          </ol>
+
+          <div class="warning">
+            <strong>注意：</strong> 默认情况下，模块内的 providers
+            是私有的，只有明确导出后才能被其他模块使用。
+          </div>
+        </section>
+
+        <section id="create-feature-module" class="section">
+          <h2><span class="emoji">🌰</span>创建功能模块</h2>
+          <p>
+            假设我们要开发一个宠物管理系统，需要处理猫咪相关的功能。我们可以创建一个专门的
+            CatsModule：
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">src/cats/cats.module.ts</div>
+            <pre><code class="language-typescript">import { Module } from '@nestjs/common';
+import { CatsController } from './cats.controller';
+import { CatsService } from './cats.service';
+
+@Module({
+  controllers: [CatsController], // 声明控制器
+  providers: [CatsService],      // 声明服务
+})
+export class CatsModule {}</code></pre>
+          </div>
+
+          <p>创建好模块后，记得在根模块中导入：</p>
+
+          <div class="code-block">
+            <div class="code-header">src/app.module.ts</div>
+            <pre><code class="language-typescript">import { Module } from '@nestjs/common';
+import { CatsModule } from './cats/cats.module';
+
+@Module({
+  imports: [CatsModule], // 注册 CatsModule
+})
+export class AppModule {}</code></pre>
+          </div>
+
+          <p>这样的项目结构看起来会很清晰：</p>
+
+          <div class="file-structure">
+            <span class="folder">src/</span><br />
+            ├── <span class="folder">cats/</span><br />
+            │ ├── <span class="folder">dto/</span><br />
+            │ │ └── <span class="file">create-cat.dto.ts</span><br />
+            │ ├── <span class="file">cats.controller.ts</span><br />
+            │ ├── <span class="file">cats.module.ts</span><br />
+            │ └── <span class="file">cats.service.ts</span><br />
+            ├── <span class="file">app.module.ts</span><br />
+            └── <span class="file">main.ts</span>
+          </div>
+        </section>
+
+        <section id="module-sharing" class="section">
+          <h2>模块间的共享：exports</h2>
+          <p>
+            NestJS
+            中的模块默认是单例的，这意味着同一个服务实例可以在多个模块间共享。如果你想让
+            CatsService 被其他模块使用，需要在 exports 中声明：
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">src/cats/cats.module.ts</div>
+            <pre><code class="language-typescript">@Module({
+  controllers: [CatsController],
+  providers: [CatsService],
+  exports: [CatsService], // 导出服务
+})
+export class CatsModule {}</code></pre>
+          </div>
+
+          <div class="tip">
+            <strong>提示：</strong> 这样，任何导入了 CatsModule
+            的模块都可以注入使用
+            CatsService，而且使用的是同一个实例。这不仅节省内存，还能保证状态的一致性。
+          </div>
+        </section>
+
+        <section id="module-reexport" class="section">
+          <h2>模块重新导出</h2>
+          <p>
+            有时候你可能需要创建一个"中介"模块，它导入某些模块后再重新导出，方便其他模块统一导入：
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">示例代码</div>
+            <pre><code class="language-typescript">import { Module } from '@nestjs/common';
+import { CommonModule } from './common.module';
+
+@Module({
+  imports: [CommonModule],  // 导入
+  exports: [CommonModule],  // 重新导出
+})
+export class CoreModule {}</code></pre>
+          </div>
+
+          <p>
+            这样其他模块只需要导入 CoreModule，就能间接使用 CommonModule
+            的功能了。
+          </p>
+        </section>
+
+        <section id="module-di" class="section">
+          <h2>模块的依赖注入</h2>
+          <p>
+            模块类本身也可以注入 providers，这在需要进行初始化配置时很有用：
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">示例代码</div>
+            <pre><code class="language-typescript">// ... 其他 import
+import { CatsService } from './cats.service';
+
+@Module({
+  controllers: [CatsController],
+  providers: [CatsService],
+  exports: [CatsService],
+})
+export class CatsModule {
+  // 在构造函数中注入 CatsService
+  constructor(private catsService: CatsService) {
+    console.log('CatsModule 初始化时可以拿到 CatsService 实例！');
+    // 可以在这里做一些基于 catsService 的配置或检查
+  }
+}</code></pre>
+          </div>
+        </section>
+
+        <section id="global-module" class="section">
+          <h2>全局模块</h2>
+          <p>
+            如果某个模块（比如配置服务、数据库连接）几乎每个模块都要用到，你可以用
+            <code>@Global()</code> 装饰器将其标记为全局模块：
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">示例代码</div>
+            <pre><code class="language-typescript">import { Module, Global } from '@nestjs/common';
+import { CatsController } from './cats.controller';
+import { CatsService } from './cats.service';
+
+@Global() // 加上这个装饰器
+@Module({
+  controllers: [CatsController],
+  providers: [CatsService],
+  exports: [CatsService],
+})
+export class CatsModule {}</code></pre>
+          </div>
+
+          <p>
+            全局模块一旦在根模块中导入，其导出的 providers
+            就能在整个应用中使用，无需在每个模块中重复导入。
+          </p>
+
+          <div class="warning">
+            <strong>注意：</strong>
+            全局模块虽然方便，但会降低代码的清晰度。通常情况下，明确地导入需要的模块是更好的实践。
+          </div>
+        </section>
+
+        <section id="dynamic-module" class="section">
+          <h2>动态模块</h2>
+          <p>
+            动态模块是 NestJS
+            的高级特性，它允许你创建可配置的模块。比如创建一个数据库模块，让用户可以自定义连接参数。
+          </p>
+
+          <p>
+            通常，你会定义一个静态方法（比如叫 <code>forRoot()</code> 或
+            <code>register()</code
+            >），这个方法接收一些配置选项，然后返回一个特殊的
+            <code>DynamicModule</code> 对象。
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">database.module.ts (简化示例)</div>
+            <pre><code class="language-typescript">import { Module, DynamicModule } from '@nestjs/common';
+import { createDatabaseProviders } from './database.providers'; // 假设的创建函数
+import { Connection } from './connection.provider'; // 假设的基础连接服务
+
+@Module({
+  providers: [Connection], // 模块自身可能有一些基础的 provider
+  exports: [Connection],
+})
+export class DatabaseModule {
+  // 静态方法，用于配置和创建动态模块
+  static forRoot(entities = [], options?): DynamicModule {
+    const providers = createDatabaseProviders(options, entities); // 根据配置创建 providers
+    return {
+      module: DatabaseModule, // 指向当前模块类
+      providers: providers,   // 动态生成的 providers
+      exports: providers,     // 也导出这些动态 providers
+      // global: true, // 如果想让它变成全局动态模块，可以加这个 (同样要谨慎)
+    };
+  }
+}</code></pre>
+          </div>
+
+          <h3 id="dynamic-usage">动态模块的使用</h3>
+          <p>使用时就像调用普通方法一样：</p>
+
+          <div class="code-block">
+            <div class="code-header">app.module.ts</div>
+            <pre><code class="language-typescript">@Module({
+  imports: [
+    DatabaseModule.forRoot({
+      host: 'localhost',
+      port: 5432,
+      database: 'myapp'
+    }),
+  ],
+})
+export class AppModule {}</code></pre>
+          </div>
+
+          <div class="highlight-box">
+            <h3>重要概念</h3>
+            <p>
+              动态模块返回的 providers 和 exports 会和 @Module()
+              装饰器里定义的合并（而不是覆盖）。这让你可以创建出既有固定部分、又有可配置部分的强大模块。
+            </p>
+          </div>
+
+          <h3 id="dynamic-reexport">动态模块的重新导出</h3>
+          <p>如果你想重新导出这个动态模块：</p>
+
+          <div class="code-block">
+            <div class="code-header">core.module.ts</div>
+            <pre><code class="language-typescript">import { Module } from '@nestjs/common';
+import { DatabaseModule } from './database/database.module';
+import { User } from './users/entities/user.entity';
+
+@Module({
+  imports: [DatabaseModule.forRoot([User])], // 在内部配置
+  exports: [DatabaseModule], // 导出 DatabaseModule 类
+})
+export class CoreModule {}</code></pre>
+          </div>
+
+          <p>直接导出模块类本身，不需要带上 <code>forRoot()</code> 调用。</p>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+            });
+          }
+        });
+      });
+
+      // 高亮当前章节
+      window.addEventListener('scroll', () => {
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.toc a');
+
+        let current = '';
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.clientHeight;
+          if (scrollY >= sectionTop - 200) {
+            current = section.getAttribute('id');
+          }
+        });
+
+        navLinks.forEach((link) => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+          }
+        });
+      });
+    </script>
+
+    <style>
+      .toc a.active {
+        background-color: #e74c3c;
+        color: white;
+        transform: translateX(5px);
+      }
+    </style>
+  </body>
+</html>
